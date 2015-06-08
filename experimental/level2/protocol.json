@@ -1,0 +1,13 @@
+{
+    "msgtype":"sensor",
+    "nodeid":1
+    "sensortype":"door1",
+    "value":0
+}
+
+{
+    "msgtype":"command",
+    "nodeid":1
+    "sensortype":"door1",
+    "value":1
+}
