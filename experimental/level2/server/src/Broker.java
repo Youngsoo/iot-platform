@@ -1,13 +1,14 @@
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Broker {
 	
 	private static final int portNum = 550;				// Port number for server socket
-	
-	private static ArrayList<PrintWriter> nodeList = new ArrayList<PrintWriter>();
-	private static ArrayList<PrintWriter> terminalList = new ArrayList<PrintWriter>();
+	private static HashMap<String, PrintWriter> nodeList = new HashMap<String, PrintWriter>();
+	private static HashMap<String, PrintWriter> terminalList = new HashMap<String, PrintWriter>();	
 	
 	public void startService()
 	{
@@ -55,20 +56,61 @@ public class Broker {
 		}
 		
 		public void run() {
+			String message;
+			
 			try {
 				BufferedReader in = new BufferedReader(
 						new InputStreamReader(socket.getInputStream()));
+				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				
+				message = in.readLine();
+				System.out.println(">> " + message);
+				String deviceType = Protocol.getDeviceType(message);
+				
+				if (deviceType != null && deviceType.equals("node")) {
+					System.out.println("Adding a node device");
+					synchronized(nodeList) {
+						nodeList.put(Protocol.getNodeId(message), out);
+					}
+				} else if (deviceType != null && deviceType.equals("terminal")) {
+					System.out.println("Adding a terminal device");
+					synchronized(terminalList) {
+						terminalList.put("drabble"/*hardcoded*/, out);
+					}
+				} else {
+					System.out.println("Not a node or terminal device so close the connection");
+					socket.close();
+					return;
+				}
+
 				while (true) {
-					String input = in.readLine();
-					if (input == null) {
+					message = in.readLine();
+					if (message == null) {
 						break;
 					}
-					System.out.println(">> " + input);
-					//System.out.println(">> msgtype: " + Protocol.getMessageType(input));
-					//System.out.println(">> value: " + Protocol.getSensorValue(input));
+					System.out.println(">> " + message);
+					//System.out.println(">> msgtype: " + Protocol.getMessageType(message));
+					//System.out.println(">> value: " + Protocol.getSensorValue(message));
+					
+					String messageType = Protocol.getMessageType(message);
+					if (messageType != null && messageType.equals("sensor")) {
+						LogDB.saveLog(
+								Protocol.getNodeId(message),
+								Protocol.getSensorType(message),
+								Protocol.getSensorValue(message));
+					}
+					 
+					if (messageType != null && messageType.equals("command")) {
+						Iterator it = nodeList.entrySet().iterator();
+						while(it.hasNext()) {
+							Map.Entry node = (Map.Entry)it.next();
+							PrintWriter writer = (PrintWriter)node.getValue();
+							System.out.println("Sending command to node:" + node.getKey());
+							writer.println(message);
+						}
+					}
 				}
-				
+
 			} catch (IOException e) {
 				System.out.println("Error handling client# " + clientNumber + ": " + e);
 			} finally {

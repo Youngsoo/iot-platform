@@ -6,32 +6,39 @@ public class Protocol {
 		String message = null;
 		return message;
 	}
+	
+	public static String getDeviceType(String msg)
+	{
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		String value = json.get("devicetype").toString();
+		return value;
+	}
 
 	public static String getMessageType(String msg)
 	{
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		String msgType = (String)json.get("msgtype");
-		return msgType;
+		String value = json.get("msgtype").toString();
+		return value;
 	}
 
 	public static String getNodeId(String msg)
 	{
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		String nodeId = (String)json.get("nodeid");
-		return nodeId;
+		String value = json.get("nodeid").toString();
+		return value;
 	}
 
 	public static String getSensorType(String msg)
 	{
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		String sensorType = (String)json.get("sensortype");
-		return sensorType;
+		String value = json.get("sensortype").toString();
+		return value;
 	}
 
-	public static long getSensorValue(String msg)
+	public static String getSensorValue(String msg)
 	{
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		long sensorValue = (long)json.get("value");
-		return sensorValue;
+		String value = json.get("value").toString();
+		return value;
 	}
 }
