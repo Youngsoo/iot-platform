@@ -1,3 +1,16 @@
+1. Register node
+{
+    "devicetype":"node",
+    "nodeid":1
+}
+
+2. Register terminal
+{
+    "devicetype":"terminal",
+    "userid":"drabble",
+}
+
+3. Sensor value
 {
     "msgtype":"sensor",
     "nodeid":1
@@ -5,6 +18,7 @@
     "value":0
 }
 
+4. User command
 {
     "msgtype":"command",
     "nodeid":1
