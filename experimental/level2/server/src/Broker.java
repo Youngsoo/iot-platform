@@ -75,7 +75,7 @@ public class Broker {
 				} else if (deviceType != null && deviceType.equals("terminal")) {
 					System.out.println("Adding a terminal device");
 					synchronized(terminalList) {
-						terminalList.put("drabble"/*hardcoded*/, out);
+						terminalList.put(Protocol.getUserId(message), out);
 					}
 				} else {
 					System.out.println("Not a node or terminal device so close the connection");

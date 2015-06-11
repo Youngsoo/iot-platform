@@ -21,6 +21,14 @@ public class Protocol {
 		return message;
 	}
 	
+
+	public static String getUserId(String msg)
+	{
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		String value = json.get("userid").toString();
+		return value;
+	}
+	
 	public static String getDeviceType(String msg)
 	{
 		JSONObject json = (JSONObject)JSONValue.parse(msg);

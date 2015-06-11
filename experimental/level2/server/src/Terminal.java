@@ -35,11 +35,14 @@ public class Terminal {
 				new InputStreamReader(clientSocket.getInputStream()));
 		PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 		
-		while(true) {
+
 			String message = null;
 			message = Protocol.generateTerminalInitMsg("drabble");
 			out.println(message);
 			System.out.println(">> " + message);
+
+		while(true) {
+			System.out.println("\n### SEND COMMAND ###");
 			
 			System.out.print("Enter node id: ");
 			String nodeId = scanner.next();
@@ -50,11 +53,12 @@ public class Terminal {
 			System.out.print("Enter sensor value: ");
 			String sensorValue = scanner.next();
 			
+			message = Protocol.generateCommandMsg(nodeId, sensorType, sensorValue);
 			System.out.println("MESSAGE: " + message);
+			
 			System.out.print("Send this command?[y/N] ");
 			String sendCmd = scanner.next();
 			if (sendCmd.equals("y")) {
-				message = Protocol.generateCommandMsg(nodeId, sensorType, sensorValue);
 				out.println(message);
 			}
 		}
