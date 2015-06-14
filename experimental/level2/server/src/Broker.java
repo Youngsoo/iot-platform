@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.nio.CharBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -57,13 +58,16 @@ public class Broker {
 		
 		public void run() {
 			String message;
+			byte[] buffer = new byte[1024];
+			int readbytes;
 			
 			try {
-				BufferedReader in = new BufferedReader(
-						new InputStreamReader(socket.getInputStream()));
+				InputStream in = socket.getInputStream();
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				
-				message = in.readLine();
+				readbytes = in.read(buffer);
+				message = new String(buffer, 0, readbytes);
+				
 				System.out.println(">> " + message);
 				String deviceType = Protocol.getDeviceType(message);
 				
@@ -83,11 +87,11 @@ public class Broker {
 					return;
 				}
 
-				while (true) {
-					message = in.readLine();
-					if (message == null) {
-						break;
-					}
+				while (true) {					
+					readbytes = in.read(buffer);
+					if (readbytes == -1) break;
+
+					message = new String(buffer, 0, readbytes);
 					System.out.println(">> " + message);
 					//System.out.println(">> msgtype: " + Protocol.getMessageType(message));
 					//System.out.println(">> value: " + Protocol.getSensorValue(message));
