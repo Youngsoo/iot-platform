@@ -6,6 +6,7 @@ import java.nio.CharBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import cmu.team5.framework.*;
 
 public class Broker {
@@ -47,10 +48,11 @@ public class Broker {
 
     	}
 	}
-	
+
 	private class MessageHandler extends Thread {
 		private Socket socket;
 		private int clientNumber;
+		private final String MAGICSTRING = "ToNY";
 		
 		public MessageHandler(Socket socket, int clientNumber)
 		{
@@ -59,17 +61,57 @@ public class Broker {
 			System.out.println("New connection with client# " + clientNumber + " at " + socket);
 		}
 		
+		private int getMessageLength(InputStream stream) throws IOException {
+			boolean isValidMsg = false;
+			byte[] readByte = new byte[4];
+			char[] magicStr = new char[4];
+			int readLen = 0;
+			int msgLen = 0;
+			
+			while(!isValidMsg) {
+				readLen = stream.read(readByte, 0, 4);
+				if (readLen < 0) return -1;
+				
+				for (int i = 0; i < readLen; i++) {
+					magicStr[i] = (char)readByte[i];
+				}
+
+				if (String.valueOf(magicStr).equals(MAGICSTRING)) isValidMsg = true;
+			}
+
+			// read the message length
+			readLen = stream.read(readByte, 0, 4);
+			if (readLen < 0) return -1;
+			
+			for (int i = 0; i < readLen; i++) {
+				magicStr[i] = (char)readByte[i];
+			}
+			
+			msgLen = Integer.parseInt(String.valueOf(magicStr));
+			return msgLen;
+		}
+		
 		public void run() {
 			String message;
 			byte[] buffer = new byte[1024];
-			int readbytes;
+			int readBytes, leftBytes, msgLength;
 			
 			try {
 				InputStream in = socket.getInputStream();
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				
-				readbytes = in.read(buffer);
-				message = new String(buffer, 0, readbytes);
+				msgLength = getMessageLength(in);
+				if (msgLength < 0) return;
+				
+				leftBytes = msgLength;
+				readBytes = 0;
+				while(leftBytes > 0) {
+					readBytes = in.read(buffer, readBytes, leftBytes);
+					if (readBytes < 0) return;
+					leftBytes -= readBytes;
+				}
+				
+				message = new String(buffer, 0, msgLength);
 				
 				System.out.println(">> " + message);
 				String deviceType = Protocol.getDeviceType(message);
@@ -90,11 +132,20 @@ public class Broker {
 					return;
 				}
 
-				while (true) {					
-					readbytes = in.read(buffer);
-					if (readbytes == -1) break;
+				while (true) {
 
-					message = new String(buffer, 0, readbytes);
+					msgLength = getMessageLength(in);
+					if (msgLength < 0) return;
+					
+					leftBytes = msgLength;
+					readBytes = 0;
+					while(leftBytes > 0) {
+						readBytes = in.read(buffer, readBytes, leftBytes);
+						if (readBytes < 0) return;
+						leftBytes -= readBytes;
+					}
+
+					message = new String(buffer, 0, msgLength);
 					System.out.println(">> " + message);
 					//System.out.println(">> msgtype: " + Protocol.getMessageType(message));
 					//System.out.println(">> value: " + Protocol.getSensorValue(message));

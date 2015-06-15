@@ -5,24 +5,37 @@ import java.net.*;
 
 class TestNode
 {
+	public static void sendHeader(BufferedWriter out, int length) throws IOException
+	{
+		char[] magicString = "ToNY".toCharArray();
+		char[] __msgLength;
+		char[] msgLength = "0000".toCharArray();
+		
+		__msgLength = String.valueOf(length).toCharArray();
+		
+		for(int i = 0; i < __msgLength.length; i++) {
+			msgLength[4 - __msgLength.length + i] = __msgLength[i];
+		}
+		
+		out.write(magicString);
+		out.write(msgLength, 0, 4);
+
+		//System.out.println("magicString: " + String.valueOf(magicString));
+		//System.out.println("msgLength: " + String.valueOf(msgLength));
+	}
+	
 	public static void main(String argv[]) throws Exception
  	{
-  		String inputLine;															// String from the server
-//    	String[]clientMsg = {	"Hello you little Arduino server, I am a PC...\n", 	// Clent messages. You can add
-//    							"I am a PC,... Hello little Arduino server...\n"	//  more messages here if you
-//    						};														//  want to.
-
+  		String inputLine;					// String from the server
     	String[]clientMsg0 = {"{\n\"devicetype\":\"node\",\n\"nodeid\":\"1234\n\"}\n"};
     	String[]clientMsg1 = {"{\"msgtype\":\"sensor\",\"nodeid\":\"1234\",\"sensortype\":\"door1\",\"value\":0}\n"};
 
-    	//String[]clientMsg0 = {"{\"devicetype\":\"terminal\",\"userid\":\"drabble\"}\n"};
-    	//String[]clientMsg1 = {"{\"msgtype\":\"command\",\"nodeid\":\"1234\",\"sensortype\":\"door1\",\"value\":1}\n"};
-
-		Socket clientSocket = null;													// The socket.
-    	int msgNum = 0;																// Index into the clientMsg array.
-    	boolean done;																// Loop flag.
-    	int msgCnt;																	// Number for message displayed
-    	int	portNum = 550;															// Port number for server socket
+		Socket clientSocket = null;		// The socket.
+    	int msgNum = 0;					// Index into the clientMsg array.
+    	boolean done;						// Loop flag.
+    	int msgCnt;						// Number for message displayed
+    	String ipaddr = "localhost";	// IP address for server
+    	int	portNum = 550;				// Port number for server socket
 
    		while(true)
 		{
@@ -36,19 +49,13 @@ class TestNode
 			{
 				try
     			{
-      		  		if (argv.length == 0)
-      		  		{
-      		  			System.out.println ( "\nPlease specify an IP address on the command line.\n" );
-       		 			System.exit(1);
-   		 			} else {
-      		  			System.out.println ( "\n\nTrying to connect to " + argv[0] + " on port " + portNum + ".\n" );
-      		  			clientSocket = new Socket(argv[0], portNum);
-       		 			done = true;
-					}
+  		  			System.out.println ( "\n\nTrying to connect to " + ipaddr + " on port " + portNum + ".\n" );
+  		  			clientSocket = new Socket(ipaddr, portNum);
+   		 			done = true;
   				}
     			catch (IOException e)
         		{
-        			System.err.println( "Could not connect to " + argv[0] + " on port: " + portNum + "\n");
+        			System.err.println( "Could not connect to " + ipaddr + " on port: " + portNum + "\n");
         		}
 
         		Thread.sleep(3000);
@@ -68,12 +75,13 @@ class TestNode
     		* messages from the server and thats it.
 			*****************************************************************************/
 			/* Here we write a message...												*/
-
+    		sendHeader(out, clientMsg0[msgNum].length());
 			out.write( clientMsg0[msgNum], 0, clientMsg0[msgNum].length() );
 			out.flush();
 
-            Thread.sleep(1000);
+           Thread.sleep(1000);
 
+          sendHeader(out, clientMsg1[msgNum].length());
 			out.write( clientMsg1[msgNum], 0, clientMsg1[msgNum].length() );
 			out.flush();
 
