@@ -57,16 +57,25 @@ public class Broker {
 		}
 		
 		public void run() {
-			String message;
+			String message = new String();
 			byte[] buffer = new byte[1024];
 			int readbytes;
+			boolean isEnd = false;
 			
 			try {
-				InputStream in = socket.getInputStream();
+				//InputStream in = socket.getInputStream();
+				BufferedReader in = new BufferedReader(
+						new InputStreamReader(socket.getInputStream()));
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				
-				readbytes = in.read(buffer);
-				message = new String(buffer, 0, readbytes);
+				//readbytes = in.read(buffer);
+				//message = new String(buffer, 0, readbytes);
+				
+				while(!isEnd) {
+					char c = (char) in.read();
+					if (c == '}') isEnd = true;
+					message = message.concat(Character.toString(c));
+				}
 				
 				System.out.println(">> " + message);
 				String deviceType = Protocol.getDeviceType(message);
@@ -87,11 +96,28 @@ public class Broker {
 					return;
 				}
 
-				while (true) {					
-					readbytes = in.read(buffer);
-					if (readbytes == -1) break;
+				while (true) {
+					//readbytes = in.read(buffer);
+					boolean isClose = false;
+					isEnd = false;
+					message = new String();
+					
+					while(!isEnd) {
+						char c = (char) in.read();
+						
+						if (c < 0) {
+							isClose =true;
+							break;
+						}
+						
+						if (c == '}') isEnd = true;
+						message = message.concat(Character.toString(c));
+					}
+					
+					//if (readbytes == -1) break;
+					if (isClose) break;
 
-					message = new String(buffer, 0, readbytes);
+					//message = new String(buffer, 0, readbytes);
 					System.out.println(">> " + message);
 					//System.out.println(">> msgtype: " + Protocol.getMessageType(message));
 					//System.out.println(">> value: " + Protocol.getSensorValue(message));
