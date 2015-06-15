@@ -1,4 +1,4 @@
-package cmu.team5.framework;
+package cmu.team5.middleware;
 
 public class Security {
 	public static String encode(String string)

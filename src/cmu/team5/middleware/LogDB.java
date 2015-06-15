@@ -1,4 +1,4 @@
-package cmu.team5.framework;
+package cmu.team5.middleware;
 
 public class LogDB {
 	public static Boolean saveLog(String nodeId, String sensorType, String value)

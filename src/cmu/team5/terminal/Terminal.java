@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.*;
-import cmu.team5.framework.*;
+import cmu.team5.middleware.*;
 
 public class Terminal {
 	
