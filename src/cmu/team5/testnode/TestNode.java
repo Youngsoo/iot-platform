@@ -3,31 +3,14 @@ package cmu.team5.testnode;
 import java.io.*;
 import java.net.*;
 
-class TestNode
-{
-	public static void sendHeader(BufferedWriter out, int length) throws IOException
-	{
-		char[] magicString = "ToNY".toCharArray();
-		char[] __msgLength;
-		char[] msgLength = "0000".toCharArray();
-		
-		__msgLength = String.valueOf(length).toCharArray();
-		
-		for(int i = 0; i < __msgLength.length; i++) {
-			msgLength[4 - __msgLength.length + i] = __msgLength[i];
-		}
-		
-		out.write(magicString);
-		out.write(msgLength, 0, 4);
+import cmu.team5.middleware.Transport;
 
-		//System.out.println("magicString: " + String.valueOf(magicString));
-		//System.out.println("msgLength: " + String.valueOf(msgLength));
-	}
-	
+class TestNode
+{	
 	public static void main(String argv[]) throws Exception
  	{
   		String inputLine;					// String from the server
-    	String[]clientMsg0 = {"{\n\"devicetype\":\"node\",\n\"nodeid\":\"1234\n\"}\n"};
+    	String[]clientMsg0 = {"{\n\"devicetype\":\"node\",\n\"nodeid\":\"1234\"}\n"};
     	String[]clientMsg1 = {"{\"msgtype\":\"sensor\",\"nodeid\":\"1234\",\"sensortype\":\"door1\",\"value\":0}\n"};
 
 		Socket clientSocket = null;		// The socket.
@@ -75,13 +58,14 @@ class TestNode
     		* messages from the server and thats it.
 			*****************************************************************************/
 			/* Here we write a message...												*/
-    		sendHeader(out, clientMsg0[msgNum].length());
+    		Transport.sendHeader(out, clientMsg0[msgNum].length());
 			out.write( clientMsg0[msgNum], 0, clientMsg0[msgNum].length() );
 			out.flush();
 
-           Thread.sleep(1000);
+			Thread.sleep(1000);
 
-          sendHeader(out, clientMsg1[msgNum].length());
+			//sendHeader(out, clientMsg1[msgNum].length());
+			Transport.sendHeader(out, clientMsg1[msgNum].length());
 			out.write( clientMsg1[msgNum], 0, clientMsg1[msgNum].length() );
 			out.flush();
 

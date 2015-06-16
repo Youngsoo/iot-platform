@@ -2,10 +2,13 @@ package cmu.team5.terminal;
 
 import java.util.Scanner;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.*;
+
 import cmu.team5.middleware.*;
 
 public class Terminal {
@@ -16,7 +19,7 @@ public class Terminal {
 		Socket clientSocket;
 		
 		Scanner scanner = new Scanner(System.in);
-			
+
 		System.out.print("Enter the server IP: ");
 		String serverip = scanner.next();
 		
@@ -36,13 +39,15 @@ public class Terminal {
 		
 		BufferedReader in = new BufferedReader(
 				new InputStreamReader(clientSocket.getInputStream()));
-		PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 		
-
-			String message = null;
-			message = Protocol.generateTerminalInitMsg("drabble");
-			out.println(message);
-			System.out.println(">> " + message);
+		String message = null;
+		message = Protocol.generateTerminalInitMsg("drabble");
+		
+		Transport.sendHeader(out, message.length());
+		out.write(message, 0, message.length());
+		out.flush();
+		System.out.println(">> " + message);
 
 		while(true) {
 			System.out.println("\n### SEND COMMAND ###");
@@ -62,7 +67,9 @@ public class Terminal {
 			System.out.print("Send this command?[y/N] ");
 			String sendCmd = scanner.next();
 			if (sendCmd.equals("y")) {
-				out.println(message);
+				Transport.sendHeader(out, message.length());
+				out.write(message, 0, message.length());
+				out.flush();
 			}
 		}
 
