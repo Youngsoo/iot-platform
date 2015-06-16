@@ -2,6 +2,8 @@ package cmu.team5.iotservice;
 
 import java.io.*;
 import java.net.*;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import cmu.team5.middleware.*;
 
@@ -10,13 +12,19 @@ enum DeviceType { UNKNOWN, NODE, TERMINAL };
 public class Broker {
 	
 	private static final int portNum = 550;
+	private static final int MAXQSIZE = 1024;
 	private NodeManager nodeMgr;
 	private TerminalManager terminalMgr;
+	private Queue msgQ;
+	private Transport transport;
 	
 	public Broker()
 	{
 		nodeMgr = new NodeManager();
 		terminalMgr = new TerminalManager();
+		
+		msgQ = new ArrayBlockingQueue(MAXQSIZE);
+		transport = new Transport(msgQ);
 	}
 	
 	public void startService()

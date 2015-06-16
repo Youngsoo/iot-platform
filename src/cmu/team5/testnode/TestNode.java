@@ -89,7 +89,6 @@ class TestNode
 			totalBytes = 0;
 			while(leftBytes > 0) {
 				readBytes = in.read(buffer, totalBytes, leftBytes);
-				System.out.println("readBytes: " + readBytes);
 				if (readBytes < 0) return;
 				leftBytes -= readBytes;
 				totalBytes += readBytes;

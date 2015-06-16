@@ -1,10 +1,21 @@
 package cmu.team5.middleware;
 
 import java.io.*;
+import java.util.Queue;
 
 public class Transport
 {
 	private final static String MAGICSTRING = "ToNY";
+	private Queue msgQ; // message queue to receive data from Transport class
+	
+	public Transport(Queue q)
+	{
+		TransportObserver observer = new TransportObserver(msgQ);
+		Transportable transportable = new WiFiTransport();
+		transportable.addObserver(observer);
+		
+		msgQ = q;
+	}
 	
 	public static int getMessageLength(InputStream stream) throws IOException {
 		boolean isValidMsg = false;
