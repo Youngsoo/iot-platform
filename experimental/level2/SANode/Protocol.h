@@ -17,7 +17,7 @@
  #include "WProgram.h"
 #endif
 
-#define LENGTH_OF_JSON_STRING		200
+#define LENGTH_OF_JSON_STRING		150
 #define LENGTH_OF_PASSWORD			4
 #define STR_HOUSE_NODE_PWD			"a2de"
 
@@ -30,8 +30,7 @@ public:
 	void 		setPassword(char * pwd);
 	char *		getPassword(void);
 	boolean		isLetterBOx(void);
-	int 		sendMessage(JsonObject&  sendMsg);
-	
+	int parseJson(char* bufJson);
 private:
 	int  	bufIndex;
 	int 	nodeType;
@@ -39,7 +38,7 @@ private:
 	actuatorMgr m_actuatorMgr;
 	sensorMgr	m_sensorMgr;
 	char bufInString[LENGTH_OF_JSON_STRING]; 
-	int parseJson(char* bufJson);
+	
 };
 #endif
 //

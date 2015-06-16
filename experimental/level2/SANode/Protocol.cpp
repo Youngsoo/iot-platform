@@ -31,7 +31,7 @@ void protocolMgr::setPassword(char * pwd)
 {	
 	strncpy(password,pwd,LENGTH_OF_PASSWORD);
 	Serial.println("setPassword");
-	Serial.println(password);
+	//Serial.println(password);
 }
 
 char * protocolMgr::getPassword(void)
@@ -61,7 +61,7 @@ int protocolMgr::handleMessage(char data)
 
 	if(bufIndex>0 && data=='}') 
 	{  
-		//parseJson(bufInString);
+		parseJson(bufInString);
 	   	bufIndex=0;
 	    bufInString[bufIndex]=0;
 	}
@@ -70,24 +70,27 @@ int protocolMgr::handleMessage(char data)
 
 JsonObject& protocolMgr::makeConnMsg()
 {
-	StaticJsonBuffer<200> jsonBuffer;
+	StaticJsonBuffer<LENGTH_OF_JSON_STRING> jsonBuffer;
   	JsonObject& root = jsonBuffer.createObject();
 	root["devicetype"] = "node";
+#if 0
+	if(isLetterBOx()==true)
+			root["nodeName"] = "mailbox";
+	else	root["nodeName"] = "homesecurity"; 
+#endif //#if 0	
  	root["nodeid"] = getPassword(); 
-    return root;
+	return root;
 }
-
-int protocolMgr::sendMessage(JsonObject&  sendMsg)
+#if 0
+JsonObject& protocolMgr::makeConnMsg()
 {
-	
-	char packetBuffer[100];
-	memset(packetBuffer,0,sizeof(packetBuffer));
-	int length=sendMsg.printTo(packetBuffer,100);
-	sprintf(packetBuffer,"ToNY%04d",length);
-	Serial.println("1");
-	Serial.println("1+++++++++++++++++++++++++++++++++++");
-	Serial.println(packetBuffer);
-	Serial.println("2+++++++++++++++++++++++++++++++++++");
-	
-	
+	StaticJsonBuffer<LENGTH_OF_JSON_STRING> jsonBuffer;
+  	JsonObject& root = jsonBuffer.createObject();
+	root["devicetype"] = "node";
+	if(isLetterBOx()==true)
+			root["nodeName"] = "mailbox";
+	else	root["nodeName"] = "homesecurity"; 
+ 	root["nodeid"] = getPassword(); 
+	return root;
 }
+#endif //#if 0
