@@ -69,7 +69,7 @@ public class Broker {
 		public void run() {
 			String message;
 			byte[] buffer = new byte[1024];
-			int readBytes, leftBytes, msgLength;
+			int readBytes, leftBytes, totalBytes, msgLength;
 			
 			try {
 				InputStream in = socket.getInputStream();
@@ -80,10 +80,13 @@ public class Broker {
 				
 				leftBytes = msgLength;
 				readBytes = 0;
+				totalBytes = 0;
 				while(leftBytes > 0) {
-					readBytes = in.read(buffer, readBytes, leftBytes);
+					readBytes = in.read(buffer, totalBytes, leftBytes);
+					System.out.println("readBytes: " + readBytes);
 					if (readBytes < 0) return;
 					leftBytes -= readBytes;
+					totalBytes += readBytes;
 				}
 				
 				message = new String(buffer, 0, msgLength);
