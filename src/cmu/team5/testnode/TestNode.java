@@ -51,7 +51,8 @@ class TestNode
 			*****************************************************************************/
 
    			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-    		BufferedReader in = new BufferedReader( new InputStreamReader( clientSocket.getInputStream()));
+    		//BufferedReader in = new BufferedReader( new InputStreamReader( clientSocket.getInputStream()));
+    		InputStream in = clientSocket.getInputStream();
 
   			/*****************************************************************************
     		* The protocol is simple: The client sends a message, then waits for two
@@ -70,31 +71,33 @@ class TestNode
 			out.flush();
 
 			/*****************************************************************************
-    		* Now we switch messages, so the nxt time we write a message is different.
-			*****************************************************************************/
-
-			if (msgNum == 0)
-				msgNum = 1;
-			else
-				msgNum = 0;
-
-			/*****************************************************************************
-    		* Now we read two messages from the server...
+    		* Now we read one messages from the server...
 			*****************************************************************************/
 
 			msgCnt = 0;
 	    	done = false;
 
-	    	while (!done)
-	    	{
-	    		if ((inputLine = in.readLine()) != null)
-	    		{
-  	  				System.out.println("FROM SERVER: " + inputLine);
-  	  				msgCnt++;
-	  			}
-				if (msgCnt > 1) done = true;
-	  		}
-
+			String message;
+			byte[] buffer = new byte[1024];
+	    	int readBytes, leftBytes, totalBytes, msgLength;
+	    	
+			msgLength = Transport.getMessageLength(in);
+			if (msgLength < 0) return;
+			
+			leftBytes = msgLength;
+			readBytes = 0;
+			totalBytes = 0;
+			while(leftBytes > 0) {
+				readBytes = in.read(buffer, totalBytes, leftBytes);
+				System.out.println("readBytes: " + readBytes);
+				if (readBytes < 0) return;
+				leftBytes -= readBytes;
+				totalBytes += readBytes;
+			}
+			
+			message = new String(buffer, 0, msgLength);
+			
+			System.out.println("FROM SERVER: " + message);
 	  		System.out.println("-------------------------------------------------------");
 
 			/*****************************************************************************
