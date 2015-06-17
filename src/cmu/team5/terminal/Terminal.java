@@ -9,15 +9,55 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.*;
 
+import javax.swing.JFrame;
+
 import cmu.team5.middleware.*;
 
-public class Terminal {
+
+public class Terminal extends JFrame{
 	
 	private static final int portNum = 550;
+	
+	public void Connection(String serverip){
+		Socket clientSocket;
+		try {
+			clientSocket = new Socket(serverip, portNum);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void MakeMsgHeader(){
+		
+	}
+	
+	public void MakeMsgData(){
+		
+	}
+	
+	
+	
+	
+	public Terminal(){
+		super("Iot Terminal");
+	      setSize(560,400);   
+	       //Create object for the Class you generated using JFromDesigner         
+	      Terminalwindow t = new Terminalwindow();
+		  setDefaultCloseOperation(EXIT_ON_CLOSE);
+	      setVisible(true);
+	      //Add the JFormDesigner to this current Main from
+	      add(t);
+	}
 
 	public static void main(String[] args) throws Exception {
 		Socket clientSocket;
 		
+		
+	    Terminal t = new Terminal(); 	
 		Scanner scanner = new Scanner(System.in);
 
 		System.out.print("Enter the server IP: ");
