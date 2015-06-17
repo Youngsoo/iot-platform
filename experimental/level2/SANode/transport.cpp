@@ -1,6 +1,8 @@
 #ifndef transportMgr_c
 #define transportMgr_c
 #include "../WiFi/src/WiFi.h"
+#include <EEPROM.h>
+
 #include "transport.h"
 #include <Stdio.h>
 
@@ -9,6 +11,15 @@
 #define PACKET_MAGIC_LENGTH			4
 #define PACKET_JSON_SIZE_LENGTH		4
 
+/*------------------------------------------------------------------------------------------------------
+|start address	|	length	|	field description	|	value description 								|
+|	0			|	1		|node resiter or not 	|	0:unregister, 1:register					
+|	1			|	1		|server IP length		|	7~15						
+|	2			|	15		|server IP address		|
+|
+---------------------------------------------------
+
+*/
 
 WiFiServer serverSocket(FIND_PORTID);
 
@@ -35,12 +46,12 @@ void transportMgr::initailize(char * pSsid,IPAddress ipAddress,int pServerPort,i
 	serverSocket.begin();
 	printConnectionStatus();
 	protocolManager.initailize();
-	serverIP=ipAddress;
+	//serverIP=ipAddress;
 	curCount=0;
 	memset(bufJsonData,0,LENGTH_OF_JSON_STRING);
 }
 
-int transportMgr::handleMessage(char readData)
+int transportMgr::handleMessage( WiFiClient socket,char readData)
 {
 	//Serial.println( bufJsonData);
 	if(curCount==0)	
@@ -62,15 +73,24 @@ int transportMgr::handleMessage(char readData)
 			mul=mul/10;
 		}		
 	}
-	Serial.println( "handleMessage:64");
-	Serial.println( jsonLength);
+	//Serial.println( "handleMessage:64");
+	//Serial.println( jsonLength);
 	if(curCount==PACKET_MAGIC_LENGTH+PACKET_JSON_SIZE_LENGTH+jsonLength)
 	{
+		JsonObject* sendJson=NULL;
 		Serial.println( "jsonLength:70");
 		Serial.println( &bufJsonData[PACKET_MAGIC_LENGTH+PACKET_JSON_SIZE_LENGTH]);
-		protocolManager.parseJson(&bufJsonData[PACKET_MAGIC_LENGTH+PACKET_JSON_SIZE_LENGTH]);
+		sendJson=protocolManager.parseJson(&bufJsonData[PACKET_MAGIC_LENGTH+PACKET_JSON_SIZE_LENGTH]);
+		if(sendJson !=NULL)
+		{
+			JsonObject & tempObj=*sendJson;
+			sendMessage(socket,tempObj);			
+		}
 		curCount=0;
+		return HANDLE_RET_VAL_STOP;			
 	}
+	return HANDLE_RET_VAL_CONTINUE;
+			
 }
 
 int transportMgr::connectionHandler(void)
@@ -82,15 +102,17 @@ int transportMgr::connectionHandler(void)
     client.stop();
     isConntected=false;
     Serial.println("try to connect");
-    if (client.connect(serverIP, serverPort))
+    //if (client.connect(serverIP, serverPort))
+    if(0)
     {
         isConntected=true;
         JsonObject& json = protocolManager.makeConnMsg();
 		//Serial.println(".....................");
 		json.printTo(Serial);
-		sendMessage(json);
+		sendMessage(client,json);
     }    
   }
+ isConntected=false;
  /*
 
  if(isConntected==true) 
@@ -116,7 +138,7 @@ int transportMgr::connectionHandler(void)
         //Serial.println(client.available());   
         char readChar=client.read();
         //protocolManager.handleMessage(readChar);
-        handleMessage(readChar);
+        handleMessage(client,readChar);
         avail=client.available();
       }  
       //Serial.println( "receive done...");
@@ -124,7 +146,7 @@ int transportMgr::connectionHandler(void)
   } // if
   else
   {
-     WiFiClient listenSock = serverSocket.available();
+     listenSock = serverSocket.available();
      if (listenSock) 
      {
        // Clear the input buffer.
@@ -138,25 +160,28 @@ int transportMgr::connectionHandler(void)
        
        // Now we switch to read mode...
        Serial.println("Reading data from client..."); 
-       int avail=listenSock.available();   
-	   while (avail > 0)
+       #if 0
+	   int avail=listenSock.available();
+	   Serial.println(avail);
+       while (avail > 0)
       {
-        //Serial.println(client.available());   
+        Serial.println(client.available());   
         char readChar=listenSock.read();
         //protocolManager.handleMessage(readChar);
         handleMessage(readChar);
         avail=client.available();
       }  
-	   #if 0
+	   #else
        char inChar = ' ';      
        while ( inChar != '\n' )
        {
          // Checks to see if data is available from the client
-         if (listenSock.available())     
+         int avail=listenSock.available();
+		 if (listenSock.available())     
          {
            // We read a character then we write on to the terminal
            inChar = listenSock.read();   
-           Serial.write(inChar);
+		   if(handleMessage(listenSock,inChar)==HANDLE_RET_VAL_STOP) break;
          }
        }      
 	   #endif // #if 0
@@ -167,7 +192,7 @@ int transportMgr::connectionHandler(void)
   return true;
 }
 
-int transportMgr::sendMessage(JsonObject&  sendMsg)
+int transportMgr::sendMessage(WiFiClient socket,JsonObject&  sendMsg)
 {
 #if 0
 	long length=0;
@@ -177,22 +202,24 @@ int transportMgr::sendMessage(JsonObject&  sendMsg)
 	else if(length>99)	header=header+"0"+length;
 	else if(length>9)	header=header+"00"+length;
 	else 				header=header+"000"+length;
-	
-	client.print(header);
-	sendMsg.printTo(client);
-	//sendMsg.printTo(Serial);
+	socket.print(header);
+	sendMsg.printTo(socket);
+	sendMsg.printTo(Serial);
 	//Serial.println(".....................");
+	
 #else
 	char bufHeader[20];
 	long length=sendMsg.printTo(Serial);
 	sprintf(bufHeader,"%s%04d",PACKET_MAGIC,length);
-	client.print(bufHeader);
-	sendMsg.printTo(client);
+	socket.print(bufHeader);
+	sendMsg.printTo(socket);
+	
 #endif
 }
 
 void transportMgr::printConnectionStatus() 
 {
+	
 	// Print the basic connection and network information: Network, IP, and Subnet mask
 	char pwd[5];
 	myip = WiFi.localIP();
@@ -220,6 +247,7 @@ void transportMgr::printConnectionStatus()
 	Serial.println(mac[0],HEX);
 	sprintf(pwd,"%02x%02x",mac[0],mac[1]);
 	protocolManager.setPassword(pwd);
+	
 	// Print the wireless signal strength:
 	rssi = WiFi.RSSI();
 	Serial.print("Signal strength (RSSI): ");

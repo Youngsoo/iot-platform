@@ -12,6 +12,7 @@ char * sensorMgr::getSersorInfo(char * sensorName)
 {
 	int DoorSwitchPin = 2;
 	int val = 0;
+	dht 	m_DHT;                   // This sets up an equivalence between dht and DHT.
 	memset(m_pResponse,0,sizeof(m_pResponse));
 	if(strcmp(sensorName,STR_EXIST)==0)
 	{

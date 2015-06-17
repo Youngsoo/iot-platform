@@ -49,8 +49,8 @@
  {
   // Initialize a serial terminal for debug messages.
   Serial.begin(9600);
-  //IPAddress server(192,168,1,149); 
-  IPAddress server(192,168,1,117);
+  IPAddress server(192,168,1,149); 
+  //IPAddress server(192,168,1,117);
   TransPortManager.initailize(WIFI_SSID,server,SERVER_PORTID,FIND_PORTID);
 }
 
@@ -63,7 +63,7 @@ void loop()
   // if the server's disconnected, stop the client:
   Serial.println("----------------------------------");
   TransPortManager.connectionHandler();
-  delay(1000);
+  delay(500);
   Serial.println("+++++++++++++++++++++++++++++++++++");
 } //  LOOP
 

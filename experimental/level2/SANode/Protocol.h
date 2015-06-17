@@ -17,7 +17,9 @@
  #include "WProgram.h"
 #endif
 
-#define LENGTH_OF_JSON_STRING		150
+#define LENGTH_OF_JSON_STRING		100	
+#define STATIC_JSON_BUFFER_SIZE		200
+
 #define LENGTH_OF_PASSWORD			4
 #define STR_HOUSE_NODE_PWD			"a2de"
 
@@ -25,19 +27,19 @@ class protocolMgr
 {
 public:
 	void 		initailize(void);
-	int 		handleMessage(char bOpen);
+	//int 		handleMessage(char bOpen);
 	JsonObject&  makeConnMsg(void);
 	void 		setPassword(char * pwd);
 	char *		getPassword(void);
 	boolean		isLetterBOx(void);
-	int parseJson(char* bufJson);
+	JsonObject* parseJson(char* bufJson);
+	JsonObject* makeRegisterAck(boolean bSuccess);
 private:
-	int  	bufIndex;
 	int 	nodeType;
 	char	password[5];
 	actuatorMgr m_actuatorMgr;
 	sensorMgr	m_sensorMgr;
-	char bufInString[LENGTH_OF_JSON_STRING]; 
+	//char bufInString[LENGTH_OF_JSON_STRING]; 
 	
 };
 #endif

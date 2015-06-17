@@ -51,7 +51,6 @@ public:
 private:	
 	char 	m_pResponse[10];
 	boolean	m_bIsLetterBox;
-	dht 	m_DHT;                   // This sets up an equivalence between dht and DHT.
 };
 #endif
 //

@@ -2,30 +2,43 @@
 
 void protocolMgr::initailize(void)
 {
-	bufIndex=0; 
-	bufInString[bufIndex]=0;
 	m_actuatorMgr.initailize();
 	m_sensorMgr.initailize(isLetterBOx());
 }
 
-int protocolMgr::parseJson(char* bufJson)
+JsonObject* protocolMgr::parseJson(char* bufJson)
 {
-   	StaticJsonBuffer<LENGTH_OF_JSON_STRING> jsonBuffer;
+   	StaticJsonBuffer<STATIC_JSON_BUFFER_SIZE> jsonBuffer;
    	JsonObject& root = jsonBuffer.parseObject(bufJson);
+	JsonObject* sendJson=NULL;
     if (!root.success()) 
      {
         Serial.println("parseObject() failed");
-        return false;
+        return sendJson;
     }
-	const char* msgtype = root["msgtype"];
-	const char* sensortype = root["sensortype"];
+	const char* messageType = root["messageType"];
+	if(strcmp(messageType,"register")==0)
+	{
+		const char* serial = root["serial"];
+		if(strcmp(serial,password)==0)
+		{
+			Serial.println("match");
+			sendJson=makeRegisterAck(true);
+		}
+		else
+		{
+			Serial.println("unmatch");
+			sendJson=makeRegisterAck(false);
+		}
+		
+	}
+	return sendJson;
+	/*
 	int nodeid = root["nodeid"];
 	int value = root["value"];
 	if(value==0) m_actuatorMgr.turnOffLED(5);
 	else			m_actuatorMgr.turnOnLED(5);
-	m_actuatorMgr.setDoor(value);
-	return true;
-
+	m_actuatorMgr.setDoor(value);*/
 }
 void protocolMgr::setPassword(char * pwd)
 {	
@@ -46,7 +59,7 @@ boolean protocolMgr::isLetterBOx(void)
 	if(strcmp(password,STR_HOUSE_NODE_PWD)==0) 	return false;
 	return true;
 }
-
+#if 0
 int protocolMgr::handleMessage(char data)
 {
 	int closeBraces=false;
@@ -67,12 +80,13 @@ int protocolMgr::handleMessage(char data)
 	}
 	return true;
 }
-
+#endif 
 JsonObject& protocolMgr::makeConnMsg()
 {
-	StaticJsonBuffer<LENGTH_OF_JSON_STRING> jsonBuffer;
+	StaticJsonBuffer<STATIC_JSON_BUFFER_SIZE> jsonBuffer;
   	JsonObject& root = jsonBuffer.createObject();
 	root["devicetype"] = "node";
+	
 #if 0
 	if(isLetterBOx()==true)
 			root["nodeName"] = "mailbox";
@@ -81,16 +95,27 @@ JsonObject& protocolMgr::makeConnMsg()
  	root["nodeid"] = getPassword(); 
 	return root;
 }
-#if 0
-JsonObject& protocolMgr::makeConnMsg()
+
+
+JsonObject* protocolMgr::makeRegisterAck(boolean bSuccess)
 {
-	StaticJsonBuffer<LENGTH_OF_JSON_STRING> jsonBuffer;
+	StaticJsonBuffer<STATIC_JSON_BUFFER_SIZE> jsonBuffer;
   	JsonObject& root = jsonBuffer.createObject();
-	root["devicetype"] = "node";
-	if(isLetterBOx()==true)
-			root["nodeName"] = "mailbox";
-	else	root["nodeName"] = "homesecurity"; 
- 	root["nodeid"] = getPassword(); 
-	return root;
+
+	root["messageType"] = "register";
+	if(bSuccess==true)
+	{
+		root["deviceType"] = "node";
+		if(isLetterBOx()==true)
+				root["nodeName"] = "mailbox";
+		else	root["nodeName"] = "homesecurity"; 
+		root["nodeId"] = password; 
+	}
+	else
+	{
+		root["result"] = "fail";
+		root["reason"] = "serial is not correct";
+	}
+	
+	return &root;
 }
-#endif //#if 0
