@@ -6,8 +6,8 @@ public class Protocol {
 	public static String generateTerminalInitMsg(String userId)
 	{
 		JSONObject json = new JSONObject();
-		json.put("devicetype", "terminal");
-		json.put("userid", userId);
+		json.put("deviceType", "terminal");
+		json.put("userId", userId);
 		String message = json.toString();
 		return message;
 	}
@@ -15,9 +15,9 @@ public class Protocol {
 	public static String generateCommandMsg(String nodeId, String sensorType, String sensorValue)
 	{
 		JSONObject json = new JSONObject();
-		json.put("msgtype", "command");
-		json.put("nodeid", nodeId);
-		json.put("sensortype", sensorType);
+		json.put("msgType", "command");
+		json.put("nodeId", nodeId);
+		json.put("sensorType", sensorType);
 		json.put("value", Integer.parseInt(sensorValue));
 		String message = json.toString();
 		return message;
@@ -28,8 +28,8 @@ public class Protocol {
 	{
 		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		if (json.get("userid") != null)
-			value = json.get("userid").toString();
+		if (json.get("userId") != null)
+			value = json.get("userId").toString();
 		return value;
 	}
 	
@@ -37,8 +37,8 @@ public class Protocol {
 	{
 		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		if (json.get("devicetype") != null)
-			value = json.get("devicetype").toString();
+		if (json.get("deviceType") != null)
+			value = json.get("deviceType").toString();
 		return value;
 	}
 
@@ -46,8 +46,8 @@ public class Protocol {
 	{
 		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		if (json.get("msgtype") != null)
-			value = json.get("msgtype").toString();
+		if (json.get("msgType") != null)
+			value = json.get("msgType").toString();
 		return value;
 	}
 
@@ -55,8 +55,8 @@ public class Protocol {
 	{
 		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		if (json.get("nodeid") != null)
-			value = json.get("nodeid").toString();
+		if (json.get("nodeId") != null)
+			value = json.get("nodeId").toString();
 		return value;
 	}
 
@@ -64,8 +64,8 @@ public class Protocol {
 	{
 		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		if (json.get("sensortype") != null)
-			value = json.get("sensortype").toString();
+		if (json.get("sensorType") != null)
+			value = json.get("sensorType").toString();
 		return value;
 	}
 
