@@ -7,14 +7,32 @@ public class Transport
 {
 	private final static String MAGICSTRING = "ToNY";
 	private Queue msgQ; // message queue to receive data from Transport class
+	private Transportable transportable;
 	
 	public Transport(Queue q)
 	{
-		TransportObserver observer = new TransportObserver(msgQ);
-		Transportable transportable = new WiFiTransport();
-		transportable.addObserver(observer);
-		
 		msgQ = q;
+		
+		TransportObserver observer = new TransportObserver(msgQ);
+		transportable = new WiFiTransport();
+		transportable.addObserver(observer);
+
+	}
+	
+	public void startService() {
+		new TransportRunner().start();
+	}
+	
+	private class TransportRunner extends Thread
+	{
+		public void run()
+		{
+			try {
+				transportable.startService();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public static int getMessageLength(InputStream stream) throws IOException {
@@ -49,7 +67,6 @@ public class Transport
 		return msgLen;
 	}
 	
-
 	public static void sendHeader(BufferedWriter out, int length) throws IOException
 	{
 		char[] magicString = MAGICSTRING.toCharArray();

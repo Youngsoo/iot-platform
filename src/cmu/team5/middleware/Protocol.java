@@ -26,43 +26,55 @@ public class Protocol {
 
 	public static String getUserId(String msg)
 	{
+		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		String value = json.get("userid").toString();
+		if (json.get("userid") != null)
+			value = json.get("userid").toString();
 		return value;
 	}
 	
 	public static String getDeviceType(String msg)
 	{
+		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		String value = json.get("devicetype").toString();
+		if (json.get("devicetype") != null)
+			value = json.get("devicetype").toString();
 		return value;
 	}
 
 	public static String getMessageType(String msg)
 	{
+		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		String value = json.get("msgtype").toString();
+		if (json.get("msgtype") != null)
+			value = json.get("msgtype").toString();
 		return value;
 	}
 
 	public static String getNodeId(String msg)
 	{
+		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		String value = json.get("nodeid").toString();
+		if (json.get("nodeid") != null)
+			value = json.get("nodeid").toString();
 		return value;
 	}
 
 	public static String getSensorType(String msg)
 	{
+		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		String value = json.get("sensortype").toString();
+		if (json.get("sensortype") != null)
+			value = json.get("sensortype").toString();
 		return value;
 	}
 
 	public static String getSensorValue(String msg)
 	{
+		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		String value = json.get("value").toString();
+		if (json.get("value") != null)
+			value = json.get("value").toString();
 		return value;
 	}
 }
