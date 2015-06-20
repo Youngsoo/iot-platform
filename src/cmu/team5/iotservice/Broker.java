@@ -85,8 +85,15 @@ public class Broker {
 				return;
 			}
 			
-			if (messageType.equals("emergency")) {
-				terminalMgr.sendEmergencyMsg(message);
+			if (messageType.equals("unregister")) {
+				String nodeId = Protocol.getNodeId(message);
+				String serialStr = Protocol.getSerial(message);
+				nodeMgr.handleUnregisterRequest(nodeId, serialStr);
+				return;
+			}
+			
+			if (messageType.equals("emergency") || messageType.equals("information")) {
+				terminalMgr.handleMessage(message);
 				return;
 			}
 

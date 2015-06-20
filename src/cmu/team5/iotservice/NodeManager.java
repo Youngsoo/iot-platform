@@ -5,19 +5,37 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import cmu.team5.middleware.Protocol;
 import cmu.team5.middleware.Transport;
 
 public class NodeManager
 {
 	private HashMap<String, BufferedWriter> nodeList;
-	private DataManager dataMgr;
+	private DataManagerIF dataMgr;
 	private SearchNode searchNode;
 	
 	public NodeManager()
 	{
 		nodeList = new HashMap<String, BufferedWriter>();
-		dataMgr = new DataManager();
+		dataMgr = new DataManagerDummy();
 		searchNode = new SearchNode();
+	}
+	
+	private void sendNode(String nodeId, String message) throws IOException
+	{
+		Iterator it = nodeList.entrySet().iterator();
+		while(it.hasNext()) {
+			Map.Entry node = (Map.Entry)it.next();
+			
+			if (nodeId.equals(node.getKey().toString())) {
+				BufferedWriter writer = (BufferedWriter)node.getValue();
+				System.out.println("Sending command to node:" + node.getKey());
+				Transport.sendHeader(writer, message.length());
+				writer.write(message, 0, message.length());
+				writer.flush();
+				break;
+			}
+		}
 	}
 	
 	public void addNode(String nodeId, OutputStream out)
@@ -47,19 +65,7 @@ public class NodeManager
 	
 	public void sendCommandMsg(String nodeId, String message) throws IOException
 	{
-		Iterator it = nodeList.entrySet().iterator();
-		while(it.hasNext()) {
-			Map.Entry node = (Map.Entry)it.next();
-			
-			if (nodeId.equals(node.getKey().toString())) {
-				BufferedWriter writer = (BufferedWriter)node.getValue();
-				System.out.println("Sending command to node:" + node.getKey());
-				Transport.sendHeader(writer, message.length());
-				writer.write(message, 0, message.length());
-				writer.flush();
-				break;
-			}
-		}
+		sendNode(nodeId, message);
 	}
 	
 	public void handleSensorMsg(String nodeId, String sensorType, String sensorValue)
@@ -70,5 +76,13 @@ public class NodeManager
 	public void handleRegisterRequest(String serialStr)
 	{
 		searchNode.startSearch(serialStr);
+	}
+	
+	public void handleUnregisterRequest(String nodeId, String serialStr) throws IOException
+	{
+		String message = Protocol.generateUnregisterMsg(serialStr);
+		sendNode(nodeId, message);
+		removeNode(nodeId);
+		
 	}
 }

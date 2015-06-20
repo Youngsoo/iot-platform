@@ -35,12 +35,14 @@ public:
 	JsonObject&  makeConnMsg(void);
 	void 		setPassword(char * pwd);
 	char *		getPassword(void);
-	boolean		isLetterBOx(void);
+	boolean		isLetterBox(void);
 	JsonObject* parseJson(char* bufJson);
 	JsonObject* makeRegisterAck(boolean bSuccess);
 	void 		setRegisterInfo(boolean bRegsiter,const char* serverIP);
 	void 		readStringFromEEPROM(char* pString,int offset,int length);
 	void 		writeString2EEPROM(const char* pString,int offset,int length);
+	char * 		getSersorValue(const char * sensorName);
+	JsonObject& makeSensorValue(const char *sensorName,char * value);
 private:
 	int 	nodeType;
 	char	password[5];

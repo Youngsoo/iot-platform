@@ -8,23 +8,38 @@ void sensorMgr::initailize(boolean isLetterBox)
 }
 
 
-char * sensorMgr::getSersorInfo(char * sensorName)
+long sensorMgr::ProximityVal(int Pin)
+{
+    long duration = 0;
+    pinMode(Pin, OUTPUT);         // Sets pin as OUTPUT
+    digitalWrite(Pin, HIGH);      // Pin HIGH
+    pinMode(Pin, INPUT);          // Sets pin as INPUT
+    digitalWrite(Pin, LOW);       // Pin LOW
+    while(digitalRead(Pin) != 0)  // Count until the pin goes
+       duration++;                // LOW (cap discharges)
+       
+    return duration;              // Returns the duration of the pulse
+}
+
+
+char * sensorMgr::getSersorInfo(const char * sensorName)
 {
 	int DoorSwitchPin = 2;
 	int val = 0;
 	dht 	m_DHT;                   // This sets up an equivalence between dht and DHT.
 	memset(m_pResponse,0,sizeof(m_pResponse));
-	if(strcmp(sensorName,STR_EXIST)==0)
+	if(strcmp(sensorName,STR_DETECT)==0)
 	{
-		val = digitalRead( PIN_PROXIMITY ); 
-		if(val==0) 	sprintf(m_pResponse,"%s",STR_EXIST);
-		else		sprintf(m_pResponse,"Not %s",STR_EXIST);	
+		long duration = 0;
+		val = ProximityVal( PIN_PROXIMITY ); 
+		if(val==0) 	sprintf(m_pResponse,"%s",STR_DETECT);
+		else		sprintf(m_pResponse,"un%s",STR_DETECT);	
 	}
 	else if(strcmp(sensorName,STR_DOORSTATE)==0)
 	{
 		val = digitalRead( PIN_DOOR ); 
-		if(val==0) 	sprintf(m_pResponse,"%s",STR_CLOSED);
-		else		sprintf(m_pResponse,"%s",STR_OPENED);	
+		if(val==0) 	sprintf(m_pResponse,"%s",STR_OPEN);	
+		else		sprintf(m_pResponse,"%s",STR_CLOSE);
 	}
 	else
 	{
@@ -36,7 +51,6 @@ char * sensorMgr::getSersorInfo(char * sensorName)
 		else val=m_DHT.temperature;
 		sprintf(m_pResponse,"%d",val);
 	}
-	
 	
 	return m_pResponse;
 }

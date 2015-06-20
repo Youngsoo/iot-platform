@@ -3,13 +3,71 @@
 #include "../WiFi/src/WiFi.h"
 #include "transport.h"
 #include <Stdio.h>
+#include <IPAddress.h>
 
-#define FIND_PORTID  551               // IP socket port ID
+#define FIND_PORTID  550               // IP socket port ID
 #define PACKET_MAGIC			"ToNY"
 #define PACKET_MAGIC_LENGTH			4
 #define PACKET_JSON_SIZE_LENGTH		4
 
 WiFiServer serverSocket(FIND_PORTID);
+const char * sensorName[4]={STR_DETECT,STR_TEMPERATURE,STR_HUMIDITY,STR_DOORSTATE};
+	
+
+int transportMgr::IPToNetAddr (char * IPStr, uint8_t * NetAddr)
+{
+	uint32_t _IP [4] = {0, 0, 0, 0};
+	uint8_t cnt = 0;
+	uint8_t idx = 0;
+	char _str = NULL;
+	// Check input paramters vaild
+	if (IPStr == NULL || NetAddr == NULL)
+	{
+		return (-1);
+	}
+
+	while((_str=*IPStr++) != NULL)
+	{
+		if (_str == '.')
+		{
+		// Clear the count, cnt MUST <= 3
+			cnt = 0;
+			if (_IP [idx]> 255)
+			{
+				return (-1);
+			}
+		idx = idx + 1;
+		}
+		else if (_str >= '0'&& _str <= '9') // '0 '-> '9'
+		{
+			if (cnt++ <3 && idx <= 3)
+			{
+				_IP [idx] = (10 * _IP [idx]) + (_str - '0');
+			}
+			else
+			{
+				return (-1);
+			}
+		}
+		else
+		{
+			return (-1);
+		}
+	}
+
+	if (_IP [idx]> 255)
+	{
+		return (-1);
+	}
+
+	// Copy Buffer to user space
+	NetAddr [0] = (uint8_t) _IP [0];
+	NetAddr [1] = (uint8_t) _IP [1];
+	NetAddr [2] = (uint8_t) _IP [2];
+	NetAddr [3] = (uint8_t) _IP [3];
+
+	return (0);
+}
 
 void transportMgr::initailize(char * pSsid,IPAddress ipAddress,int pServerPort,int pFindPort)
 {
@@ -38,6 +96,30 @@ void transportMgr::initailize(char * pSsid,IPAddress ipAddress,int pServerPort,i
 	curCount=0;
 	memset(bufJsonData,0,LENGTH_OF_JSON_STRING);
 	isConntected=false;
+	EEPROM.write(EEPROM_ADDR_NODE_REG, false);
+}
+
+
+int transportMgr::handleEvent(void)
+{
+	int			sensorCount=4,count=0;	
+	if(protocolManager.isLetterBox()==true)	sensorCount=1;
+	for(count=0;count < sensorCount ; count++)
+	{
+		char * curValue=NULL;
+		Serial.println( sensorName[count]);
+		curValue=protocolManager.getSersorValue(sensorName[count]);
+		Serial.println( curValue);
+		if(strcmp(curValue,preSensoInfo[count]) !=0)
+		{
+			JsonObject& json = protocolManager.makeSensorValue(sensorName[count],curValue);
+			//json.printTo(Serial);
+			sendMessage(client,json);
+				
+			strcpy(preSensoInfo[count],curValue);
+		}
+	}
+	return true;
 }
 
 int transportMgr::handleMessage( WiFiClient socket,char readData)
@@ -87,24 +169,28 @@ int transportMgr::connectionHandler(void)
 	int isRegistered=EEPROM.read(EEPROM_ADDR_NODE_REG);
 	//isRegistered=false;
 	Serial.println(isRegistered);
-	
+	 
 	if(isRegistered==true)
 	{
 		char pServerIP[15];
+		uint8_t convServerIP[4];
 		int serverLength=EEPROM.read(EEPROM_ADDR_SERVERIP_LENGTH);
 		memset(pServerIP,0,sizeof(pServerIP));
 		protocolManager.readStringFromEEPROM(pServerIP,EEPROM_ADDR_SERVERIP,serverLength);
 		//String stringServerIP;
 		//EEPROM.get(EEPROM_ADDR_SERVERIP, stringServerIP);
-		Serial.println(pServerIP);
-		serverIP=IPAddress((const uint8_t *)pServerIP);
 
+		IPToNetAddr(pServerIP,convServerIP);
+		serverIP=IPAddress(convServerIP);
+		Serial.println(serverIP);
+		//serverIP=IPAddress("192.168.1.149");
 		if (!client.connected()) 
 	  	{
-	    	Serial.println("disconnecting.");
+	      	Serial.println("disconnecting.");
 	    	client.stop();
 	    	isConntected=false;
 	    	Serial.println("try to connect");
+	
 	    	if (client.connect(serverIP, serverPort))
 	    	{
 		        isConntected=true;
@@ -116,7 +202,7 @@ int transportMgr::connectionHandler(void)
 	  	}
 	}
  
- isConntected=false;
+
  /*
 
  if(isConntected==true) 
@@ -133,6 +219,8 @@ int transportMgr::connectionHandler(void)
     }
    
 	 */
+	
+
  if(isRegistered==true) //&& isConntected==true) 
    {   
 	 
@@ -145,6 +233,7 @@ int transportMgr::connectionHandler(void)
         handleMessage(client,readChar);
         avail=client.available();
       }  
+	 handleEvent();
       //Serial.println( "receive done...");
 
   } // if
