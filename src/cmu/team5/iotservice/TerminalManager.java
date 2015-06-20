@@ -13,12 +13,12 @@ import cmu.team5.middleware.*;
 public class TerminalManager
 {
 	private HashMap<BufferedWriter, String> terminalList;
-	private DataManager dataMgr;
+	private DataManagerIF dataMgr;
 	
 	public TerminalManager()
 	{
 		terminalList = new HashMap<BufferedWriter, String>();
-		dataMgr = new DataManager();
+		dataMgr = new DataManagerDummy();
 	}
 	
 	private void addTerminal(String userId, OutputStream out)
@@ -48,7 +48,7 @@ public class TerminalManager
 		}
 	}
 	
-	public void sendEmergencyMsg(String message) throws IOException
+	public void handleMessage(String message) throws IOException
 	{
 		sendAllTerminal(message);
 	}

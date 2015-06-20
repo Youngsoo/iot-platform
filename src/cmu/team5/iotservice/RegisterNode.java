@@ -54,10 +54,16 @@ class RegisterNode extends Thread
 			*****************************************************************************/
 
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
-			BufferedReader in = new BufferedReader( new InputStreamReader(sock.getInputStream()));
+			InputStream in = sock.getInputStream();
 			
 			String message = Protocol.generateRegisterMsg(sock.getLocalAddress().toString(), serialStr);
 			Transport.sendMessage(out, message);
+			
+			// Receive ack message from node
+			message = Transport.getMessage(in);
+			if (message != null) {
+				// TODO: send the result to terminal
+			}
 
 			/*****************************************************************************
 			* That's it! Close the streams and close the socket.
