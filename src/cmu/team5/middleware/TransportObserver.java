@@ -11,7 +11,7 @@ public class TransportObserver
 		msgQ = q;
 	}
 	
-	public synchronized void notify(String msg)
+	public synchronized void notify(Object msg)
 	{
 		msgQ.add(msg);
 	}

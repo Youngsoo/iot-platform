@@ -50,8 +50,12 @@
   // Initialize a serial terminal for debug messages.
   Serial.begin(9600);
   IPAddress server(192,168,1,149); 
+  String tmpingServerIP;
+	
   //IPAddress server(192,168,1,117);
   TransPortManager.initailize(WIFI_SSID,server,SERVER_PORTID,FIND_PORTID);
+  //EEPROM.write(1, false);
+
 }
 
 

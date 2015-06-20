@@ -27,13 +27,13 @@ public class WiFiTransport implements Transportable
 		{
 			ServerSocket listener = new ServerSocket(portNum);
 			int clientNumber = 0;
-			
+
     		try
     		{
     			while(true) {
     				System.out.println ("Waiting for connection on port " + portNum + "." );
     				new MessageHandler(listener.accept(), clientNumber++).start();
-    			}		
+    			}
         	}
     		catch (IOException e)
         	{
@@ -60,28 +60,34 @@ public class WiFiTransport implements Transportable
 		public void run() {
 			String recvMsg;
 			byte[] buffer = new byte[1024];
-			int readBytes, leftBytes, msgLength;
-			
-			try {
-				InputStream in = socket.getInputStream();
-				OutputStream out = socket.getOutputStream();
-				
-				msgLength = Transport.getMessageLength(in);
-				if (msgLength < 0) return;
-				
-				leftBytes = msgLength;
-				readBytes = 0;
-				while(leftBytes > 0) {
-					readBytes = in.read(buffer, readBytes, leftBytes);
-					if (readBytes < 0) return;
-					leftBytes -= readBytes;
-				}
-				
-				recvMsg = new String(buffer, 0, msgLength);
+			int readBytes, leftBytes, totalBytes, msgLength;
+			InputStream in = null;
+			OutputStream out = null;
 
-				System.out.println(">> " + recvMsg);
+			try {
+				in = socket.getInputStream();
+				out = socket.getOutputStream();
 				
-				observer.notify(recvMsg);
+				while(true) {
+					msgLength = Transport.getMessageLength(in);
+					if (msgLength < 0) return;
+					
+					leftBytes = msgLength;
+					readBytes = 0;
+					totalBytes = 0;
+					while(leftBytes > 0) {
+						readBytes = in.read(buffer, totalBytes, leftBytes);
+						if (readBytes < 0) return;
+						leftBytes -= readBytes;
+						totalBytes += readBytes;
+					}
+					
+					recvMsg = new String(buffer, 0, msgLength);
+	
+					//System.out.println(">> " + recvMsg);
+
+					observer.notify(new IoTMessage(recvMsg, out));
+				}
 
 			} catch (IOException e) {
 				System.out.println("Error handling client# " + clientNumber + ": " + e);
@@ -93,7 +99,9 @@ public class WiFiTransport implements Transportable
 				}
               System.out.println("Connection with client# " + clientNumber + " closed");
 			}
-		}
+
+		} // run
+		
 	} // class MessageHandler
 
 }

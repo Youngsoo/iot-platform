@@ -7,14 +7,32 @@ public class Transport
 {
 	private final static String MAGICSTRING = "ToNY";
 	private Queue msgQ; // message queue to receive data from Transport class
+	private Transportable transportable;
 	
 	public Transport(Queue q)
 	{
-		TransportObserver observer = new TransportObserver(msgQ);
-		Transportable transportable = new WiFiTransport();
-		transportable.addObserver(observer);
-		
 		msgQ = q;
+		
+		TransportObserver observer = new TransportObserver(msgQ);
+		transportable = new WiFiTransport();
+		transportable.addObserver(observer);
+
+	}
+	
+	public void startService() {
+		new TransportRunner().start();
+	}
+	
+	private class TransportRunner extends Thread
+	{
+		public void run()
+		{
+			try {
+				transportable.startService();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public static int getMessageLength(InputStream stream) throws IOException {
@@ -49,7 +67,6 @@ public class Transport
 		return msgLen;
 	}
 	
-
 	public static void sendHeader(BufferedWriter out, int length) throws IOException
 	{
 		char[] magicString = MAGICSTRING.toCharArray();
@@ -67,5 +84,48 @@ public class Transport
 
 		//System.out.println("magicString: " + String.valueOf(magicString));
 		//System.out.println("msgLength: " + String.valueOf(msgLength));
+	}
+	
+	public static void sendMessage(BufferedWriter out, String message) throws IOException
+	{
+		char[] magicString = MAGICSTRING.toCharArray();
+		char[] __msgLength;
+		char[] msgLength = "0000".toCharArray();
+		
+		__msgLength = String.valueOf(message.length()).toCharArray();
+		
+		for(int i = 0; i < __msgLength.length; i++) {
+			msgLength[4 - __msgLength.length + i] = __msgLength[i];
+		}
+		
+		out.write(magicString);
+		out.write(msgLength, 0, 4);
+		out.write(message, 0, message.length());
+		out.flush();
+
+		//System.out.println("magicString: " + String.valueOf(magicString));
+		//System.out.println("msgLength: " + String.valueOf(msgLength));
+	}
+	
+	public static String getMessage(InputStream in) throws IOException
+	{
+		String message = null;
+		byte[] buffer = new byte[1024];
+    	int readBytes, leftBytes, totalBytes, msgLength;
+    	
+		msgLength = Transport.getMessageLength(in);
+		if (msgLength < 0) return null;
+		
+		leftBytes = msgLength;
+		readBytes = 0;
+		totalBytes = 0;
+		while(leftBytes > 0) {
+			readBytes = in.read(buffer, totalBytes, leftBytes);
+			if (readBytes < 0) return null;
+			leftBytes -= readBytes;
+			totalBytes += readBytes;
+		}
+		
+		return message;
 	}
 }

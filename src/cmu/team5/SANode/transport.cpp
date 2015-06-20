@@ -1,8 +1,6 @@
 #ifndef transportMgr_c
 #define transportMgr_c
 #include "../WiFi/src/WiFi.h"
-#include <EEPROM.h>
-
 #include "transport.h"
 #include <Stdio.h>
 
@@ -10,16 +8,6 @@
 #define PACKET_MAGIC			"ToNY"
 #define PACKET_MAGIC_LENGTH			4
 #define PACKET_JSON_SIZE_LENGTH		4
-
-/*------------------------------------------------------------------------------------------------------
-|start address	|	length	|	field description	|	value description 								|
-|	0			|	1		|node resiter or not 	|	0:unregister, 1:register					
-|	1			|	1		|server IP length		|	7~15						
-|	2			|	15		|server IP address		|
-|
----------------------------------------------------
-
-*/
 
 WiFiServer serverSocket(FIND_PORTID);
 
@@ -49,6 +37,7 @@ void transportMgr::initailize(char * pSsid,IPAddress ipAddress,int pServerPort,i
 	//serverIP=ipAddress;
 	curCount=0;
 	memset(bufJsonData,0,LENGTH_OF_JSON_STRING);
+	isConntected=false;
 }
 
 int transportMgr::handleMessage( WiFiClient socket,char readData)
@@ -95,23 +84,38 @@ int transportMgr::handleMessage( WiFiClient socket,char readData)
 
 int transportMgr::connectionHandler(void)
 {
+	int isRegistered=EEPROM.read(EEPROM_ADDR_NODE_REG);
+	//isRegistered=false;
+	Serial.println(isRegistered);
+	
+	if(isRegistered==true)
+	{
+		char pServerIP[15];
+		int serverLength=EEPROM.read(EEPROM_ADDR_SERVERIP_LENGTH);
+		memset(pServerIP,0,sizeof(pServerIP));
+		protocolManager.readStringFromEEPROM(pServerIP,EEPROM_ADDR_SERVERIP,serverLength);
+		//String stringServerIP;
+		//EEPROM.get(EEPROM_ADDR_SERVERIP, stringServerIP);
+		Serial.println(pServerIP);
+		serverIP=IPAddress((const uint8_t *)pServerIP);
 
- if (!client.connected()) 
-  {
-    Serial.println("disconnecting.");
-    client.stop();
-    isConntected=false;
-    Serial.println("try to connect");
-    //if (client.connect(serverIP, serverPort))
-    if(0)
-    {
-        isConntected=true;
-        JsonObject& json = protocolManager.makeConnMsg();
-		//Serial.println(".....................");
-		json.printTo(Serial);
-		sendMessage(client,json);
-    }    
-  }
+		if (!client.connected()) 
+	  	{
+	    	Serial.println("disconnecting.");
+	    	client.stop();
+	    	isConntected=false;
+	    	Serial.println("try to connect");
+	    	if (client.connect(serverIP, serverPort))
+	    	{
+		        isConntected=true;
+		        JsonObject& json = protocolManager.makeConnMsg();
+				//Serial.println(".....................");
+				json.printTo(Serial);
+				sendMessage(client,json);
+	   	 	}    
+	  	}
+	}
+ 
  isConntected=false;
  /*
 
@@ -129,9 +133,9 @@ int transportMgr::connectionHandler(void)
     }
    
 	 */
- if(isConntected==true) 
+ if(isRegistered==true) //&& isConntected==true) 
    {   
-
+	 
      int avail=client.available();    
      while (avail > 0)
       {
@@ -147,7 +151,7 @@ int transportMgr::connectionHandler(void)
   else
   {
      listenSock = serverSocket.available();
-     if (listenSock) 
+	 if (listenSock) 
      {
        // Clear the input buffer.
        listenSock.flush();
