@@ -19,7 +19,7 @@ new FormModel {
 				name: "label2"
 				"text": "User ID"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 13
+				"gridX": 15
 				"gridY": 7
 			} )
 			add( new FormComponent( "javax.swing.JTextField" ) {
@@ -33,10 +33,10 @@ new FormModel {
 				name: "label3"
 				"text": "Password"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 13
+				"gridX": 15
 				"gridY": 9
 			} )
-			add( new FormComponent( "javax.swing.JTextField" ) {
+			add( new FormComponent( "javax.swing.JPasswordField" ) {
 				name: "Password"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridX": 17
@@ -57,7 +57,30 @@ new FormModel {
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridX": 7
-				"gridY": 19
+				"gridY": 15
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane2"
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "NodeControl"
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 13
+				"gridY": 15
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "Refresh"
+				"text": "Refresh"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 7
+				"gridY": 17
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "Update"
+				"text": "Update"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 13
+				"gridY": 17
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 100, 0 )

@@ -57,7 +57,7 @@ public class Protocol {
 		json.put("messageType", "login");
 		json.put("deviceType", "terminal");
 		json.put("userId", userId);
-		json.put("paswd", passwd);
+		json.put("passwd", passwd);
 		String message = json.toString();
 		return message;
 	}
@@ -88,6 +88,16 @@ public class Protocol {
 			value = json.get("messageType").toString();
 		return value;
 	}
+	
+	public static String getResult(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("result") != null)
+			value = json.get("result").toString();
+		return value;
+	}
+	
 
 	public static String getNodeId(String msg)
 	{

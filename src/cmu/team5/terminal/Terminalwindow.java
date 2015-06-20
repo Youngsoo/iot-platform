@@ -26,9 +26,10 @@ import com.jgoodies.forms.layout.*;
  */
 public class Terminalwindow extends JPanel {
 	
-	private String ServerIp="localhost";
+	private String ServerIp="192.168.1.117";//"localhost";
 	private String ServerPort="550";
 	private static Socket ClientSocket = null; 
+	private boolean UserLoggedIn = false;
 	
 	
 	
@@ -38,17 +39,84 @@ public class Terminalwindow extends JPanel {
 
 	
 	
+	
 	public JMenuBar AddmenuBar(){
 		  JMenuBar menuBar = new JMenuBar();
 		  
 		  JMenu menu = new JMenu("Server Configuration");
-
+          JMenu nodemenu = new JMenu("Node Registration");
 		  menuBar.add(menu);
+		  menuBar.add(nodemenu);
 		  
 		  JMenuItem serverIp = new JMenuItem("Server IP");
 		  JMenuItem serverPort = new JMenuItem("Server Port");
 		  menu.add(serverIp);
 		  menu.add(serverPort);
+		  
+		  JMenuItem NodeReg = new JMenuItem("New Node Registration");
+		  JMenuItem NodeUreg = new JMenuItem("Node Un-Registration");
+		
+		  nodemenu.add(NodeReg);
+		  nodemenu.add(NodeUreg);
+		  
+		  
+		  NodeReg.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent arg0) {
+	            	if (IsuserloggedIn()){
+	            		String NodeId = JOptionPane.showInputDialog("Enter Node ID(Serial No):");
+	            		try {
+							InputStream in = ClientSocket.getInputStream();
+							BufferedWriter out;
+		        			out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
+		        			String msg = Protocol.generateRegisterMsg(null,NodeId);
+		        			Transport.sendMessage(out, msg);
+		        			
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+	        			
+	            	}
+	            	else{
+	        			JOptionPane.showMessageDialog(Terminal.Window, "Need to login First..");
+	            	}
+	                
+	            }
+	        });
+		  
+		  
+		  NodeUreg.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent arg0) {
+	            	
+	            	if (true){//IsuserloggedIn()){
+		       	
+	            	Object[] NodeList = {"Node1", "Node2", "Node3"};
+	            	UIManager.put("OptionPane.cancelButtonText", "Cancel");
+	            	UIManager.put("OptionPane.okButtonText", "UnRegister");
+	            	
+	            	String SelectedNodeId = (String)JOptionPane.showInputDialog(
+	            	                    Terminal.Window,
+	            	                    "Registered Node Details..\n",
+	            	                    "Node UnRegistration..",
+	            	                    JOptionPane.PLAIN_MESSAGE,
+	            	                    null,
+	            	                    NodeList,
+	            	                    NodeList[0]);
+	            	
+	            	
+	            	//If a string was returned, say so.
+	            	if ((SelectedNodeId != null) && (SelectedNodeId.length() > 0)) {
+	            		
+	            	    return;
+	            	}  		
+	            }
+	            	else{
+	            		JOptionPane.showMessageDialog(Terminal.Window, "Need to login First..");
+	            	}
+	            }
+	        });
+		  
+		  
 		  
 		  serverIp.addActionListener(new ActionListener() {
 	            public void actionPerformed(ActionEvent arg0) {
@@ -89,14 +157,25 @@ public class Terminalwindow extends JPanel {
 	}
 	
 	
-	public void MakeNodeInfo(){
+	public JTable MakeNodeInfo(){
 		DefaultTableModel model = new DefaultTableModel(); 
 		JTable table = new JTable(model); 
+		model.addColumn("NodeId"); 
 		model.addColumn("Sensor Name"); 
 		model.addColumn("Value"); 
 		
-		model.addRow(new Object[]{"v1", "v2"});
+		model.addRow(new Object[]{"v1", "v2", "V3"});
+		model.addRow(new Object[]{"v11", "v22", "V33"});
+		model.addRow(new Object[]{"v111", "v222", "V333"});
 		
+		return table;
+		
+	}
+	
+	public JTable MakeActuratorTable(){
+		 NodeControlUi stm = new NodeControlUi();
+	     JTable sourceTable = new JTable(stm);
+	     return sourceTable;
 	}
 	
 	private void AddSensordata(){
@@ -104,13 +183,13 @@ public class Terminalwindow extends JPanel {
 	}
 
 
-	
+	private boolean IsuserloggedIn(){
+		return UserLoggedIn;
+	}
 	
   	
 	private void LoginActionPerformed(ActionEvent e) {
 		// TODO add your code here
-		System.out.println(" "+ UserId.getText() + " " + Password.getText());
-	
 		ClientSocket = Connection();
 		
 		try {
@@ -121,13 +200,16 @@ public class Terminalwindow extends JPanel {
 			String msg = Protocol.generateLoginMsg(UserId.getText(), Password.getText());
 			Transport.sendMessage(out, msg);
 			String ret = Transport.getMessage(in);
-			System.out.println("..."+ ret);
+			if (Protocol.getResult(ret).compareTo("success") == 0){
+				UserLoggedIn = true;
+			}			
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			UserLoggedIn = false;
 		}
 		
-		if (ClientSocket !=null){
+		if ((ClientSocket !=null) && (UserLoggedIn == true)){
 			Login.setEnabled(false);
 			UserId.setEnabled(false);
 			Password.setEditable(false);
@@ -145,7 +227,11 @@ public class Terminalwindow extends JPanel {
 		Password = new JPasswordField();
 		Login = new JButton();
 		scrollPane1 = new JScrollPane();
-		NodeInfo = new JTable();
+		NodeInfo = MakeNodeInfo();
+		scrollPane2 = new JScrollPane();
+		NodeControl = MakeActuratorTable();
+		Refresh = new JButton();
+		Update = new JButton();
 
 		//======== this ========
 
@@ -166,7 +252,7 @@ public class Terminalwindow extends JPanel {
 
 		//---- label2 ----
 		label2.setText("User ID");
-		add(label2, CC.xy(13, 7));
+		add(label2, CC.xy(15, 7));
 
 		//---- UserId ----
 		UserId.setColumns(10);
@@ -174,7 +260,7 @@ public class Terminalwindow extends JPanel {
 
 		//---- label3 ----
 		label3.setText("Password");
-		add(label3, CC.xy(13, 9));
+		add(label3, CC.xy(15, 9));
 		add(Password, CC.xy(17, 9));
 
 		//---- Login ----
@@ -191,7 +277,21 @@ public class Terminalwindow extends JPanel {
 		{
 			scrollPane1.setViewportView(NodeInfo);
 		}
-		add(scrollPane1, CC.xy(7, 19));
+		add(scrollPane1, CC.xy(7, 15));
+
+		//======== scrollPane2 ========
+		{
+			scrollPane2.setViewportView(NodeControl);
+		}
+		add(scrollPane2, CC.xy(13, 15));
+
+		//---- Refresh ----
+		Refresh.setText("Refresh");
+		add(Refresh, CC.xy(7, 17));
+
+		//---- Update ----
+		Update.setText("Update");
+		add(Update, CC.xy(13, 17));
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
@@ -205,5 +305,9 @@ public class Terminalwindow extends JPanel {
 	private JButton Login;
 	private JScrollPane scrollPane1;
 	private JTable NodeInfo;
+	private JScrollPane scrollPane2;
+	private JTable NodeControl;
+	private JButton Refresh;
+	private JButton Update;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }
