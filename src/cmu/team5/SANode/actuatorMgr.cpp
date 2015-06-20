@@ -9,6 +9,29 @@ Serial.println( "actuatorMgr");
 }
 
 
+
+int actuatorMgr::handleActuator(const char * target,const char * commnad)
+{
+	int nTrue=1,nFalse=0;
+	if(strcmp(target,STR_DOOR)==0)
+	{
+		if(strcmp(commnad,STR_OPEN)==0)	setDoor(nTrue);
+		else							setDoor(nFalse);
+	}
+	else if(strcmp(target,STR_LIGHT)==0)
+	{
+		if(strcmp(commnad,STR_ON)==0)	turnOnLED(PIN_LIGHT);
+		else							turnOffLED(PIN_LIGHT);
+	}
+	else
+	{
+		if(strcmp(commnad,STR_ON)==0)	turnOnLED(PIN_ALARM);
+		else							turnOffLED(PIN_ALARM);
+	}
+
+	return true;
+}
+
 int actuatorMgr::setDoor(int bOpen)
 {
 	if(bOpen==1)		m_cServo.write(0);

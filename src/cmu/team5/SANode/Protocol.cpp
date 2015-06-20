@@ -3,7 +3,7 @@
 void protocolMgr::initailize(void)
 {
 	m_actuatorMgr.initailize();
-	m_sensorMgr.initailize(isLetterBOx());
+	m_sensorMgr.initailize(isLetterBox());
 }
 void protocolMgr::writeString2EEPROM(const char* pString,int offset,int length)
 {
@@ -35,6 +35,7 @@ void protocolMgr::setRegisterInfo(boolean bRegsiter,const char* serverIP)
 		//EEPROM.put(EEPROM_ADDR_SERVERIP, stringServerIP);			
 	}
 	EEPROM.write(EEPROM_ADDR_NODE_REG, bRegsiter);
+	
 }
 
 
@@ -66,6 +67,17 @@ JsonObject* protocolMgr::parseJson(char* bufJson)
 		}
 		
 	}
+	else if(strcmp(messageType,"unregister")==0)
+	{
+		setRegisterInfo(false,NULL);
+	}
+	else if(strcmp(messageType,"actuator")==0)
+	{
+		const char* actuatorType = root["actuatorType"];
+		const char* value = root["value"];
+		m_actuatorMgr.handleActuator(actuatorType,value);
+	}
+	
 	
 		
 	return sendJson;
@@ -90,7 +102,7 @@ char * protocolMgr::getPassword(void)
 	return password;
 }
 
-boolean protocolMgr::isLetterBOx(void)
+boolean protocolMgr::isLetterBox(void)
 {
 	if(strcmp(password,STR_HOUSE_NODE_PWD)==0) 	return false;
 	return true;
@@ -124,14 +136,13 @@ JsonObject& protocolMgr::makeConnMsg()
 	root["deviceType"] = "node";
 	
 #if 0
-	if(isLetterBOx()==true)
+	if(isLetterBox()==true)
 			root["nodeName"] = "mailbox";
 	else	root["nodeName"] = "homesecurity"; 
 #endif //#if 0	
  	root["nodeid"] = getPassword(); 
 	return root;
 }
-
 
 JsonObject* protocolMgr::makeRegisterAck(boolean bSuccess)
 {
@@ -142,7 +153,7 @@ JsonObject* protocolMgr::makeRegisterAck(boolean bSuccess)
 	if(bSuccess==true)
 	{
 		root["deviceType"] = "node";
-		if(isLetterBOx()==true)
+		if(isLetterBox()==true)
 				root["nodeName"] = "mailbox";
 		else	root["nodeName"] = "homesecurity"; 
 		root["nodeId"] = password; 
@@ -155,3 +166,23 @@ JsonObject* protocolMgr::makeRegisterAck(boolean bSuccess)
 	
 	return &root;
 }
+
+JsonObject& protocolMgr::makeSensorValue(const char *sensorName,char * value)
+{
+	StaticJsonBuffer<STATIC_JSON_BUFFER_SIZE> jsonBuffer;
+  	JsonObject& root = jsonBuffer.createObject();
+
+	root["messageType"] = "sensor";
+	root["sensorType"] = sensorName;
+	root["nodeId"] = password; 
+	root["value"] = value; 
+	
+	return root;
+}
+
+
+char * protocolMgr::getSersorValue(const char * sensorName)
+{
+	return m_sensorMgr.getSersorInfo(sensorName);
+}
+

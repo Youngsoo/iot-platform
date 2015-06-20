@@ -21,15 +21,14 @@
  #include "WProgram.h"
 #endif
 
+#define STR_SENSOR			"sensor"
+#define STR_DETECT			"detect"
+#define STR_TEMPERATURE		"temperature"
+#define STR_HUMIDITY		"humidity"
+#define STR_DOORSTATE		"doorState"
 
-#define STR_SENSOR			"Sensor"
-#define STR_TEMPERATURE		"Temperature"
-#define STR_HUMIDITY		"Humidity"
-#define STR_EXIST			"Exist"
-#define STR_DOORSTATE		"DoorState"
-
-#define STR_CLOSED			"Closed"
-#define STR_OPENED			"Opened"
+#define STR_CLOSE			"close"
+#define STR_OPEN			"open"
 
 enum
 {
@@ -46,8 +45,9 @@ enum
 class sensorMgr
 {
 public:
-	char *  getSersorInfo(char * sensorName);
+	char *  getSersorInfo(const char * sensorName);
 	void 	initailize(boolean isLetterBox);
+	long 	ProximityVal(int Pin);
 private:	
 	char 	m_pResponse[10];
 	boolean	m_bIsLetterBox;
