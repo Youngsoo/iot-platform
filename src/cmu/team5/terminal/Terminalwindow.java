@@ -5,7 +5,12 @@
 package cmu.team5.terminal;
 
 import java.awt.event.*;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
 import javax.swing.*;
+
 import com.jgoodies.forms.factories.*;
 import com.jgoodies.forms.layout.*;
 
@@ -13,13 +18,85 @@ import com.jgoodies.forms.layout.*;
  * @author swapan pati
  */
 public class Terminalwindow extends JPanel {
+	
+	private String ServerIp=null;
+	private String ServerPort=null;
+	private static Socket ClientSocket = null; 
+	
+	
+	
 	public Terminalwindow() {
 		initComponents();
 	}
 
+	
+	
+	public JMenuBar AddmenuBar(){
+		  JMenuBar menuBar = new JMenuBar();
+		  
+		  JMenu menu = new JMenu("Server Configuration");
+
+		  menuBar.add(menu);
+		  
+		  JMenuItem serverIp = new JMenuItem("Server IP");
+		  JMenuItem serverPort = new JMenuItem("Server Port");
+		  menu.add(serverIp);
+		  menu.add(serverPort);
+		  
+		  serverIp.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent arg0) {
+	                ServerIp = JOptionPane.showInputDialog(null, "Enter the Server IP:",ServerIp);
+	            }
+	        });
+		  
+		  serverPort.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent arg0) {
+	                ServerPort = JOptionPane.showInputDialog(null,"Enter the Server Port:",ServerPort);
+	            }
+	        });
+		  
+		  return menuBar;
+		  
+	  }
+	
+	
+	public Socket Connection(){
+		Socket clientSocket = null;
+		try {
+			if (ServerIp != null && ServerPort != null ){
+				clientSocket = new Socket(ServerIp, Integer.valueOf(ServerPort));
+			}
+			else{
+				JOptionPane.showMessageDialog(Terminal.Window, "Set the Server Configuration");
+			}
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(Terminal.Window, "Check the Server Configuration");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return clientSocket;
+	}
+	
+
+
+	
+	
+  	
 	private void LoginActionPerformed(ActionEvent e) {
 		// TODO add your code here
 		System.out.println(" "+ UserId.getText() + " " + Password.getText());
+	
+		ClientSocket = Connection();
+		
+		if (ClientSocket !=null){
+			Login.setEnabled(false);
+			UserId.setEnabled(false);
+			Password.setEditable(false);
+		}
 		
 	}
 
