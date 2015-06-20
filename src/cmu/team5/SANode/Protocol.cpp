@@ -5,6 +5,38 @@ void protocolMgr::initailize(void)
 	m_actuatorMgr.initailize();
 	m_sensorMgr.initailize(isLetterBOx());
 }
+void protocolMgr::writeString2EEPROM(const char* pString,int offset,int length)
+{
+	int iCount=0;
+	char tmp=' ';
+	for(iCount=0; iCount< length; iCount++)
+	{
+		EEPROM.write(offset+iCount, pString[iCount]);			
+	}
+}
+
+void protocolMgr::readStringFromEEPROM(char* pString,int offset,int length)
+{
+	int iCount=0;
+	char tmp=' ';
+	for(iCount=0; iCount< length; iCount++)
+	{
+		pString[iCount]=EEPROM.read(offset+iCount);
+	}
+}
+
+
+void protocolMgr::setRegisterInfo(boolean bRegsiter,const char* serverIP)
+{	int value;
+	if(bRegsiter==true)
+	{	
+		EEPROM.write(EEPROM_ADDR_SERVERIP_LENGTH, strlen(serverIP));
+		writeString2EEPROM(serverIP,EEPROM_ADDR_SERVERIP,strlen(serverIP));
+		//EEPROM.put(EEPROM_ADDR_SERVERIP, stringServerIP);			
+	}
+	EEPROM.write(EEPROM_ADDR_NODE_REG, bRegsiter);
+}
+
 
 JsonObject* protocolMgr::parseJson(char* bufJson)
 {
@@ -22,7 +54,9 @@ JsonObject* protocolMgr::parseJson(char* bufJson)
 		const char* serial = root["serial"];
 		if(strcmp(serial,password)==0)
 		{
-			Serial.println("match");
+			const char* serverip = root["serverIp"];
+			setRegisterInfo(true,serverip);
+			
 			sendJson=makeRegisterAck(true);
 		}
 		else
@@ -32,6 +66,8 @@ JsonObject* protocolMgr::parseJson(char* bufJson)
 		}
 		
 	}
+	
+		
 	return sendJson;
 	/*
 	int nodeid = root["nodeid"];
@@ -85,7 +121,7 @@ JsonObject& protocolMgr::makeConnMsg()
 {
 	StaticJsonBuffer<STATIC_JSON_BUFFER_SIZE> jsonBuffer;
   	JsonObject& root = jsonBuffer.createObject();
-	root["devicetype"] = "node";
+	root["deviceType"] = "node";
 	
 #if 0
 	if(isLetterBOx()==true)

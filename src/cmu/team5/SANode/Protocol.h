@@ -6,10 +6,14 @@
 
 #ifndef protocolMgr_h
 #define protocolMgr_h
+#include <EEPROM.h>
 
 #include "../ArduinoJson/ArduinoJson.h"
 #include "actuatorMgr.h"    
 #include "sensorMgr.h" 
+
+#include "memoryMap.h" 
+
 
 #if ARDUINO >= 100
  #include "Arduino.h"
@@ -34,6 +38,9 @@ public:
 	boolean		isLetterBOx(void);
 	JsonObject* parseJson(char* bufJson);
 	JsonObject* makeRegisterAck(boolean bSuccess);
+	void 		setRegisterInfo(boolean bRegsiter,const char* serverIP);
+	void 		readStringFromEEPROM(char* pString,int offset,int length);
+	void 		writeString2EEPROM(const char* pString,int offset,int length);
 private:
 	int 	nodeType;
 	char	password[5];
