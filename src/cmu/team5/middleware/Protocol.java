@@ -15,7 +15,7 @@ public class Protocol {
 	public static String generateCommandMsg(String nodeId, String sensorType, String sensorValue)
 	{
 		JSONObject json = new JSONObject();
-		json.put("msgType", "command");
+		json.put("messageType", "command");
 		json.put("nodeId", nodeId);
 		json.put("sensorType", sensorType);
 		json.put("value", Integer.parseInt(sensorValue));
@@ -26,8 +26,16 @@ public class Protocol {
 	public static String generateRegisterMsg(String serverIp, String serialStr)
 	{
 		JSONObject json = new JSONObject();
-		json.put("msgType", "register");
+		json.put("messageType", "register");
 		json.put("serverIp", serverIp);
+		json.put("serial", serialStr);
+		String message = json.toString();
+		return message;
+	}
+	
+	public static String generateUnregisterMsg(String serialStr) {
+		JSONObject json = new JSONObject();
+		json.put("messageType", "unregister");
 		json.put("serial", serialStr);
 		String message = json.toString();
 		return message;
@@ -35,7 +43,7 @@ public class Protocol {
 	
 	public static String generateLoginResultMsg(String userId, boolean result, String reason) {
 		JSONObject json = new JSONObject();
-		json.put("msgType", "login");
+		json.put("messageType", "login");
 		json.put("userId", userId);
 		if (result) json.put("result", "success");
 		else json.put("result",  "fail");
