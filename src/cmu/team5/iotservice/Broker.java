@@ -43,51 +43,32 @@ public class Broker {
 	
 	public void startService() throws IOException
 	{
-		IoTMessage iotMsg = null;
-		String message = null;
-		DeviceType deviceType = DeviceType.UNKNOWN;
-		String deviceKey;
-
 		transport.startService();
 		
 		while(true) {
-			iotMsg = getQueue();
-			message = iotMsg.getMessage();
-			
-			System.out.println(">> " + message);
-			
-			String deviceTypeStr = Protocol.getDeviceType(message);
-			if (deviceTypeStr != null) {
-				OutputStream out = iotMsg.getStream();
-				
-				if (deviceTypeStr.equals("node")) {
-
-					deviceType = DeviceType.NODE;
-					deviceKey = Protocol.getNodeId(message);
-					nodeMgr.addNode(deviceKey, out);
-				} else if (deviceTypeStr.equals("terminal")) {
-					deviceType = DeviceType.TERMINAL;
-					deviceKey = Protocol.getUserId(message);
-					terminalMgr.addTerminal(deviceKey, out);
-				} else {
-					System.out.println("Not a node or terminal device so close the connection");
-					out.close();
-					return;
-				}
-
-			} else {
-				handleMessage(message);
-			}
-			
+			IoTMessage iotMsg = getQueue();
+			handleMessage(iotMsg);
 		}
 	}
-	
-	private void handleMessage(String message) throws IOException
+
+	private void handleMessage(IoTMessage iotMsg) throws IOException
 	{
+		String message = iotMsg.getMessage();
+		OutputStream out = iotMsg.getStream();
+		
+		System.out.println(">> " + message);
+		
+		String deviceTypeStr = Protocol.getDeviceType(message);
+		if (deviceTypeStr != null) {
+			// NOTE: "deviceType" only appears at the first message
+			handleDeviceInitMsg(message, out);
+			return;
+		}
+
 		String messageType = Protocol.getMessageType(message);
 		if (messageType != null) {
 			if (messageType.equals("sensor")) {
-				nodeMgr.handleNodeMsg(
+				nodeMgr.handleSensorMsg(
 						Protocol.getNodeId(message),
 						Protocol.getSensorType(message),
 						Protocol.getSensorValue(message));
@@ -100,10 +81,47 @@ public class Broker {
 			}
 			
 			if (messageType.equals("register")) {
-				
+				nodeMgr.handleRegisterRequest(Protocol.getSerial(message));
+				return;
+			}
+			
+			if (messageType.equals("emergency")) {
+				terminalMgr.sendEmergencyMsg(message);
 				return;
 			}
 
+		}
+	}
+	
+	private void handleDeviceInitMsg(String message, OutputStream out) throws IOException
+	{
+		String deviceTypeStr = Protocol.getDeviceType(message);
+		String deviceKey = null;
+		
+		if (deviceTypeStr.equals("node")) {
+			String messageType = Protocol.getMessageType(message);
+			if (messageType != null && messageType.equals("register")) {
+				// NOTE: This means it is a node info message
+				String nodeName = Protocol.getNodeName(message);
+				nodeMgr.registerNode(deviceKey, nodeName);
+				
+			} else {
+				deviceKey = Protocol.getNodeId(message);
+				if (nodeMgr.isRegisteredNode(deviceKey)) {
+					nodeMgr.addNode(deviceKey, out);
+				} else {
+					System.out.println("Not a registered node so close the connection");
+					out.close();
+					return;
+				}
+			}
+			
+		} else if (deviceTypeStr.equals("terminal")) {
+			deviceKey = Protocol.getUserId(message);
+			terminalMgr.addTerminal(deviceKey, out);
+		} else {
+			System.out.println("Not a node or terminal device so close the connection");
+			out.close();
 		}
 	}
 	

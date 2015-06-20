@@ -23,6 +23,16 @@ public class Protocol {
 		return message;
 	}
 	
+	public static String generateRegisterMsg(String serverIp, String serialStr)
+	{
+		JSONObject json = new JSONObject();
+		json.put("msgType", "register");
+		json.put("serverIp", serverIp);
+		json.put("serial", serialStr);
+		String message = json.toString();
+		return message;
+	}
+	
 
 	public static String getUserId(String msg)
 	{
@@ -75,6 +85,24 @@ public class Protocol {
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
 		if (json.get("value") != null)
 			value = json.get("value").toString();
+		return value;
+	}
+	
+	public static String getSerial(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("serial") != null)
+			value = json.get("serial").toString();
+		return value;
+	}
+	
+	public static String getNodeName(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("nodeName") != null)
+			value = json.get("nodeName").toString();
 		return value;
 	}
 }

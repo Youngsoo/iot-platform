@@ -1,4 +1,4 @@
-package cmu.team5.testnode;
+package cmu.team5.testdevice;
 
 import java.io.*;
 import java.net.*;

@@ -11,11 +11,13 @@ public class NodeManager
 {
 	private HashMap<String, BufferedWriter> nodeList;
 	private DataManager dataMgr;
+	private SearchNode searchNode;
 	
 	public NodeManager()
 	{
 		nodeList = new HashMap<String, BufferedWriter>();
 		dataMgr = new DataManager();
+		searchNode = new SearchNode();
 	}
 	
 	public void addNode(String nodeId, OutputStream out)
@@ -31,6 +33,16 @@ public class NodeManager
 		synchronized(nodeList) {
 			nodeList.remove(nodeId);
 		}
+	}
+	
+	public void registerNode(String nodeId, String nodeName)
+	{
+		System.out.println("Register (" + nodeName + ":" + nodeId + ")");
+	}
+	
+	public boolean isRegisteredNode(String nodeId)
+	{
+		return true;
 	}
 	
 	public void sendCommandMsg(String nodeId, String message) throws IOException
@@ -50,8 +62,13 @@ public class NodeManager
 		}
 	}
 	
-	public void handleNodeMsg(String nodeId, String sensorType, String sensorValue)
+	public void handleSensorMsg(String nodeId, String sensorType, String sensorValue)
 	{
 		dataMgr.saveLog(nodeId, sensorType, sensorValue);
+	}
+	
+	public void handleRegisterRequest(String serialStr)
+	{
+		searchNode.startSearch(serialStr);
 	}
 }
