@@ -105,11 +105,11 @@ public class Transport
 
 		//System.out.println("magicString: " + String.valueOf(magicString));
 		//System.out.println("msgLength: " + String.valueOf(msgLength));
+		System.out.println("Sending >> " + message);
 	}
 	
 	public static String getMessage(InputStream in) throws IOException
 	{
-		String message = null;
 		byte[] buffer = new byte[1024];
     	int readBytes, leftBytes, totalBytes, msgLength;
     	
@@ -121,11 +121,12 @@ public class Transport
 		totalBytes = 0;
 		while(leftBytes > 0) {
 			readBytes = in.read(buffer, totalBytes, leftBytes);
+			System.out.println("readBytes:" + readBytes);
 			if (readBytes < 0) return null;
 			leftBytes -= readBytes;
 			totalBytes += readBytes;
 		}
 		
-		return message;
+		return new String(buffer, 0, msgLength);
 	}
 }

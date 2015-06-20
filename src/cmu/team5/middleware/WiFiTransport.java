@@ -59,8 +59,6 @@ public class WiFiTransport implements Transportable
 
 		public void run() {
 			String recvMsg;
-			byte[] buffer = new byte[1024];
-			int readBytes, leftBytes, totalBytes, msgLength;
 			InputStream in = null;
 			OutputStream out = null;
 
@@ -69,20 +67,8 @@ public class WiFiTransport implements Transportable
 				out = socket.getOutputStream();
 				
 				while(true) {
-					msgLength = Transport.getMessageLength(in);
-					if (msgLength < 0) return;
-					
-					leftBytes = msgLength;
-					readBytes = 0;
-					totalBytes = 0;
-					while(leftBytes > 0) {
-						readBytes = in.read(buffer, totalBytes, leftBytes);
-						if (readBytes < 0) return;
-						leftBytes -= readBytes;
-						totalBytes += readBytes;
-					}
-					
-					recvMsg = new String(buffer, 0, msgLength);
+					recvMsg = Transport.getMessage(in);
+					if (recvMsg == null) break;
 	
 					//System.out.println(">> " + recvMsg);
 

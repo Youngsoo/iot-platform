@@ -24,7 +24,7 @@ class MessageReceiver extends Thread {
 					return;
 				}
 				
-				System.out.println("Received >> " + message);
+				System.out.println("Received << " + message);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -67,8 +67,8 @@ class TestDevice
 			String command = scanner.next();
 			String message = null;
 			
-			if (command.equals("terminal")) {
-				message = Protocol.generateTerminalInitMsg("drabble");
+			if (command.equals("login")) {
+				message = "{\"messageType\":\"login\",\"deviceType\":\"terminal\",\"userId\":\"tony\",\"passwd\":\"lge123\"}";
 				
 			} else if (command.equals("node")) {
 				message =  "{\"deviceType\":\"node\",\"nodeId\":\"1234\"}";
@@ -85,7 +85,7 @@ class TestDevice
 			}
 			
 			Transport.sendMessage(out, message);
-			System.out.println("Sending >> " + message);
+			//System.out.println("Sending >> " + message);
 			
 		} // while
 		

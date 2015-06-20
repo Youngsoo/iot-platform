@@ -33,6 +33,16 @@ public class Protocol {
 		return message;
 	}
 	
+	public static String generateLoginResultMsg(String userId, boolean result, String reason) {
+		JSONObject json = new JSONObject();
+		json.put("msgType", "login");
+		json.put("userId", userId);
+		if (result) json.put("result", "success");
+		else json.put("result",  "fail");
+		if (reason != null) json.put("reason", reason);
+		String message = json.toString();
+		return message;
+	}
 
 	public static String getUserId(String msg)
 	{
@@ -56,8 +66,8 @@ public class Protocol {
 	{
 		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		if (json.get("msgType") != null)
-			value = json.get("msgType").toString();
+		if (json.get("messageType") != null)
+			value = json.get("messageType").toString();
 		return value;
 	}
 
@@ -105,4 +115,14 @@ public class Protocol {
 			value = json.get("nodeName").toString();
 		return value;
 	}
+	
+	public static String getPasswd(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("passwd") != null)
+			value = json.get("passwd").toString();
+		return value;
+	}
+
 }

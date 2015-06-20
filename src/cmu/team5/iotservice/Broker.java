@@ -56,7 +56,7 @@ public class Broker {
 		String message = iotMsg.getMessage();
 		OutputStream out = iotMsg.getStream();
 		
-		System.out.println(">> " + message);
+		System.out.println("Received << " + message);
 		
 		String deviceTypeStr = Protocol.getDeviceType(message);
 		if (deviceTypeStr != null) {
@@ -104,29 +104,31 @@ public class Broker {
 				// NOTE: This means it is a node info message
 				String nodeName = Protocol.getNodeName(message);
 				nodeMgr.registerNode(deviceKey, nodeName);
+				return;
 				
-			} else {
-				deviceKey = Protocol.getNodeId(message);
-				if (nodeMgr.isRegisteredNode(deviceKey)) {
-					nodeMgr.addNode(deviceKey, out);
-				} else {
-					System.out.println("Not a registered node so close the connection");
-					out.close();
-					return;
-				}
+			}
+
+			deviceKey = Protocol.getNodeId(message);
+			if (deviceKey != null && nodeMgr.isRegisteredNode(deviceKey)) {
+				nodeMgr.addNode(deviceKey, out);
+				return;
 			}
 			
-		} else if (deviceTypeStr.equals("terminal")) {
-			deviceKey = Protocol.getUserId(message);
-			terminalMgr.addTerminal(deviceKey, out);
-		} else {
-			System.out.println("Not a node or terminal device so close the connection");
+			System.out.println("Not a registered node so close the connection");
 			out.close();
-		}
+			return;			
+		} // node
+		
+		if (deviceTypeStr.equals("terminal")) {
+			String messageType = Protocol.getMessageType(message);
+			if (messageType != null && messageType.equals("login")) {
+				terminalMgr.handleLogin(Protocol.getUserId(message), Protocol.getPasswd(message), out);
+				return;
+			}
+		} // terminal
+		
+		System.out.println("Not a node or terminal device so close the connection");
+		out.close();
 	}
 	
 } // class Broker
-
-
-
-

@@ -7,4 +7,15 @@ public class DataManager
 		System.out.println("[LOG] nodeId:" + nodeId + " sensorType:" + sensorType + " value:" + value);
 		return true;
 	}
+
+	public boolean isValidLogin(String userId, String passwd)
+	{
+		return true;
+	}
+	
+	public String getLoginErrMsg(String usreId, String passwd)
+	{
+		String reason = "Bad password.";
+		return reason;
+	}
 }
