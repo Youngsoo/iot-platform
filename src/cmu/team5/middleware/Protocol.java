@@ -51,6 +51,16 @@ public class Protocol {
 		String message = json.toString();
 		return message;
 	}
+	
+	public static String generateLoginMsg(String userId, String passwd) {
+		JSONObject json = new JSONObject();
+		json.put("messageType", "login");
+		json.put("deviceType", "terminal");
+		json.put("userId", userId);
+		json.put("paswd", passwd);
+		String message = json.toString();
+		return message;
+	}
 
 	public static String getUserId(String msg)
 	{

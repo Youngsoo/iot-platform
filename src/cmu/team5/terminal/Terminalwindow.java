@@ -5,11 +5,18 @@
 package cmu.team5.terminal;
 
 import java.awt.event.*;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import cmu.team5.middleware.Protocol;
+import cmu.team5.middleware.Transport;
 
 import com.jgoodies.forms.factories.*;
 import com.jgoodies.forms.layout.*;
@@ -19,8 +26,8 @@ import com.jgoodies.forms.layout.*;
  */
 public class Terminalwindow extends JPanel {
 	
-	private String ServerIp=null;
-	private String ServerPort=null;
+	private String ServerIp="localhost";
+	private String ServerPort="550";
 	private static Socket ClientSocket = null; 
 	
 	
@@ -81,6 +88,20 @@ public class Terminalwindow extends JPanel {
 		return clientSocket;
 	}
 	
+	
+	public void MakeNodeInfo(){
+		DefaultTableModel model = new DefaultTableModel(); 
+		JTable table = new JTable(model); 
+		model.addColumn("Sensor Name"); 
+		model.addColumn("Value"); 
+		
+		model.addRow(new Object[]{"v1", "v2"});
+		
+	}
+	
+	private void AddSensordata(){
+		
+	}
 
 
 	
@@ -91,6 +112,20 @@ public class Terminalwindow extends JPanel {
 		System.out.println(" "+ UserId.getText() + " " + Password.getText());
 	
 		ClientSocket = Connection();
+		
+		try {
+			InputStream in = ClientSocket.getInputStream();
+			BufferedWriter out;
+			
+			out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
+			String msg = Protocol.generateLoginMsg(UserId.getText(), Password.getText());
+			Transport.sendMessage(out, msg);
+			String ret = Transport.getMessage(in);
+			System.out.println("..."+ ret);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		if (ClientSocket !=null){
 			Login.setEnabled(false);
@@ -109,6 +144,8 @@ public class Terminalwindow extends JPanel {
 		label3 = new JLabel();
 		Password = new JPasswordField();
 		Login = new JButton();
+		scrollPane1 = new JScrollPane();
+		NodeInfo = new JTable();
 
 		//======== this ========
 
@@ -120,25 +157,25 @@ public class Terminalwindow extends JPanel {
 				java.awt.Color.red), getBorder())); addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
 
 		setLayout(new FormLayout(
-			"7*(default, $lcgap), default",
-			"6*(default, $lgap), default"));
+			"8*(default, $lcgap), default",
+			"9*(default, $lgap), default"));
 
 		//---- label1 ----
 		label1.setText("IoT Terminal System");
-		add(label1, CC.xy(11, 3));
+		add(label1, CC.xy(13, 3));
 
 		//---- label2 ----
 		label2.setText("User ID");
-		add(label2, CC.xy(11, 7));
+		add(label2, CC.xy(13, 7));
 
 		//---- UserId ----
 		UserId.setColumns(10);
-		add(UserId, CC.xy(15, 7));
+		add(UserId, CC.xy(17, 7));
 
 		//---- label3 ----
 		label3.setText("Password");
-		add(label3, CC.xy(11, 9));
-		add(Password, CC.xy(15, 9));
+		add(label3, CC.xy(13, 9));
+		add(Password, CC.xy(17, 9));
 
 		//---- Login ----
 		Login.setText("Login");
@@ -148,7 +185,13 @@ public class Terminalwindow extends JPanel {
 				LoginActionPerformed(e);
 			}
 		});
-		add(Login, CC.xy(15, 13));
+		add(Login, CC.xy(17, 13));
+
+		//======== scrollPane1 ========
+		{
+			scrollPane1.setViewportView(NodeInfo);
+		}
+		add(scrollPane1, CC.xy(7, 19));
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
@@ -160,5 +203,7 @@ public class Terminalwindow extends JPanel {
 	private JLabel label3;
 	private JPasswordField Password;
 	private JButton Login;
+	private JScrollPane scrollPane1;
+	private JTable NodeInfo;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

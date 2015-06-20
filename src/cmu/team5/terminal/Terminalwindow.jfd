@@ -4,42 +4,42 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-			"$columnSpecs": "default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default"
-			"$rowSpecs": "default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default"
+			"$columnSpecs": "default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default"
+			"$rowSpecs": "default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default"
 		} ) {
 			name: "this"
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label1"
 				"text": "IoT Terminal System"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 11
+				"gridX": 13
 				"gridY": 3
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label2"
 				"text": "User ID"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 11
+				"gridX": 13
 				"gridY": 7
 			} )
 			add( new FormComponent( "javax.swing.JTextField" ) {
 				name: "UserId"
 				"columns": 10
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 15
+				"gridX": 17
 				"gridY": 7
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label3"
 				"text": "Password"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 11
+				"gridX": 13
 				"gridY": 9
 			} )
 			add( new FormComponent( "javax.swing.JTextField" ) {
 				name: "Password"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 15
+				"gridX": 17
 				"gridY": 9
 			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
@@ -47,8 +47,17 @@ new FormModel {
 				"text": "Login"
 				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "LoginActionPerformed", true ) )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 15
+				"gridX": 17
 				"gridY": 13
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "NodeInfo"
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 7
+				"gridY": 19
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 100, 0 )
