@@ -1,6 +1,6 @@
 package cmu.team5.iotservice;
 
-public class DataManagerJSON implements DataManagerIF
+public class DataManagerJDBC implements DataManagerIF
 {
 	public Boolean saveLog(String nodeId, String sensorType, String value)
 	{
