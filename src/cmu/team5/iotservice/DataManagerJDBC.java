@@ -1,5 +1,7 @@
 package cmu.team5.iotservice;
 
+import java.util.ArrayList;
+
 public class DataManagerJDBC implements DataManagerIF
 {
 	public Boolean saveLog(String nodeId, String sensorType, String value)
@@ -22,5 +24,12 @@ public class DataManagerJDBC implements DataManagerIF
 		if (!userId.equals("tony")) reason = new String("No matching user id.");
 		if (!passwd.equals("lge123")) reason = new String("Bad password.");
 		return reason;
+	}
+
+	public ArrayList<String> getRegisteredNode() {
+		return null;
+	}
+
+	public void addRegisteredNode(String nodeId) {
 	}
 }

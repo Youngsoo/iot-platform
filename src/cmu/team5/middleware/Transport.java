@@ -92,6 +92,8 @@ public class Transport
 		char[] __msgLength;
 		char[] msgLength = "0000".toCharArray();
 		
+		if (message == null) return;
+		
 		__msgLength = String.valueOf(message.length()).toCharArray();
 		
 		for(int i = 0; i < __msgLength.length; i++) {
@@ -121,7 +123,6 @@ public class Transport
 		totalBytes = 0;
 		while(leftBytes > 0) {
 			readBytes = in.read(buffer, totalBytes, leftBytes);
-			System.out.println("readBytes:" + readBytes);
 			if (readBytes < 0) return null;
 			leftBytes -= readBytes;
 			totalBytes += readBytes;

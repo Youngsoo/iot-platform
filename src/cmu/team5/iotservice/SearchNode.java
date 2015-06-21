@@ -18,7 +18,7 @@ class SearchNode
 		public void run()
 	    {
 			int searchSize = 2048;							// The number of IP address to scan at the same time.
-			int	portNum = 550;								// Port number for server socket
+			int	portNum = 551;								// Port number for server socket
 			int i = 0;										// Loop index
 		  	int oct1start, oct1finish;						// The first IP octet range (starting/ending IP addresses)
 		  	int oct2start, oct2finish;						// The second IP octet range (starting/ending IP addresses)
@@ -45,9 +45,10 @@ class SearchNode
 		   	mySubnetMask = "255.255.255.254";
 		   	System.out.println( "Subnet Mask:: " + mySubnetMask +"\n\n" );
 		   	
-		   	//isNodeFixedIP = true;
+		   	isNodeFixedIP = false;
 		   	if (isNodeFixedIP) {
-		   		tcList[i] = new RegisterNode("192.168.1.117", portNum, serialStr);
+		   		tcList[0] = new RegisterNode("192.168.1.132", portNum, serialStr);
+		   		tcList[0].start();
 		   		return;
 		   	}
 

@@ -2,6 +2,7 @@ package cmu.team5.testdevice;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import cmu.team5.middleware.Protocol;
@@ -54,7 +55,6 @@ class TestDevice
 	       
 	       Thread.sleep(3000);
 		}
-		
 		System.out.println("Connected to the server");
 		
 		InputStream in = clientSocket.getInputStream();
@@ -74,10 +74,21 @@ class TestDevice
 				message =  "{\"deviceType\":\"node\",\"nodeId\":\"1234\"}";
 				
 			} else if (command.equals("sensor")) {
-				message = "{\"msgType\":\"sensor\",\"nodeId\":\"1234\",\"sensorType\":\"door1\",\"value\"}";
+				message = "{\"messageType\":\"sensor\",\"nodeId\":\"1234\",\"sensorType\":\"door1\",\"value\"}";
 				
 			} else if (command.equals("register")) {
-				message = "{\"msgType\":\"register\",\"serial\":\"1234\"}";
+				message = "{\"messageType\":\"register\",\"serial\":\"a2de\"}";
+				
+			} else if (command.equals("unregister")) {
+				message = "{\"messageType\":\"unregister\",\"nodeId\":\"a2de\",\"serial\":\"a2de\"}";
+				
+			} else if (command.equals("protocol")) {
+				ArrayList nodeList = new ArrayList();
+				//nodeList.add("1234");
+				//nodeList.add("4567");
+				message = Protocol.generateRegisteredNodeMsg(nodeList);
+				System.out.println("message: " + message);
+				continue;
 				
 			} else {
 				System.out.println("Bad command: " + command);

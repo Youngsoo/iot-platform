@@ -2,6 +2,7 @@ package cmu.team5.iotservice;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -96,6 +97,12 @@ public class Broker {
 				terminalMgr.handleMessage(message);
 				return;
 			}
+			
+			if (messageType.equals("nodeRegistered")) {
+				ArrayList list = nodeMgr.getRegisteredNode();
+				String nodeRegMsg = Protocol.generateRegisteredNodeMsg(list);
+				//Transport.sendMessage(out, nodeRegMsg);
+			}
 
 		}
 	}
@@ -103,7 +110,7 @@ public class Broker {
 	private void handleDeviceInitMsg(String message, OutputStream out) throws IOException
 	{
 		String deviceTypeStr = Protocol.getDeviceType(message);
-		String deviceKey = null;
+		String deviceKey = Protocol.getNodeId(message);
 		
 		if (deviceTypeStr.equals("node")) {
 			String messageType = Protocol.getMessageType(message);
@@ -112,10 +119,8 @@ public class Broker {
 				String nodeName = Protocol.getNodeName(message);
 				nodeMgr.registerNode(deviceKey, nodeName);
 				return;
-				
 			}
 
-			deviceKey = Protocol.getNodeId(message);
 			if (deviceKey != null && nodeMgr.isRegisteredNode(deviceKey)) {
 				nodeMgr.addNode(deviceKey, out);
 				return;

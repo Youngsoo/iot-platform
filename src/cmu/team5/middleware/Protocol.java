@@ -1,6 +1,12 @@
 package cmu.team5.middleware;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+
 import org.json.simple.*;
+
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 public class Protocol {
 	public static String generateTerminalInitMsg(String userId)
@@ -41,7 +47,8 @@ public class Protocol {
 		return message;
 	}
 	
-	public static String generateLoginResultMsg(String userId, boolean result, String reason) {
+	public static String generateLoginResultMsg(String userId, boolean result, String reason)
+	{
 		JSONObject json = new JSONObject();
 		json.put("messageType", "login");
 		json.put("userId", userId);
@@ -52,12 +59,31 @@ public class Protocol {
 		return message;
 	}
 	
-	public static String generateLoginMsg(String userId, String passwd) {
+	public static String generateLoginMsg(String userId, String passwd)
+	{
 		JSONObject json = new JSONObject();
 		json.put("messageType", "login");
 		json.put("deviceType", "terminal");
 		json.put("userId", userId);
 		json.put("passwd", passwd);
+		String message = json.toString();
+		return message;
+	}
+	
+	public static String generateRegisteredNodeMsg(ArrayList nodeList)
+	{
+		JSONObject json = new JSONObject();
+		json.put("messageType", "nodeRegistered");
+		
+		ArrayList array = new ArrayList();
+		for (Iterator<String> it = nodeList.iterator(); it.hasNext();) {
+			HashMap map = new HashMap();
+			map.put("nodeId", it.next());
+			array.add(map);
+		}
+		if (array.size() > 0)
+			json.put("node", array);
+		
 		String message = json.toString();
 		return message;
 	}

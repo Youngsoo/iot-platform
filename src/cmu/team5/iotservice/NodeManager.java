@@ -1,6 +1,7 @@
 package cmu.team5.iotservice;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -55,6 +56,7 @@ public class NodeManager
 	
 	public void registerNode(String nodeId, String nodeName)
 	{
+		dataMgr.addRegisteredNode(nodeId);
 		System.out.println("Register (" + nodeName + ":" + nodeId + ")");
 	}
 	
@@ -84,5 +86,10 @@ public class NodeManager
 		sendNode(nodeId, message);
 		removeNode(nodeId);
 		
+	}
+	
+	public ArrayList getRegisteredNode()
+	{
+		return dataMgr.getRegisteredNode();
 	}
 }

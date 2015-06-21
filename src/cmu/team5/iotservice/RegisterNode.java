@@ -32,6 +32,7 @@ class RegisterNode extends Thread
 			System.out.println("Searching IP:" + ip + " port:" + port);
 			return;
 		}
+		//System.out.println("Searching IP:" + ip + " port:" + port);
 		
 		try
    		{
@@ -44,7 +45,7 @@ class RegisterNode extends Thread
 			SocketAddress sockaddr = new InetSocketAddress(ip, port);
 			Socket sock = new Socket();
 			sock.connect(sockaddr, 3250);
-			System.out.print( "\n\nNODE FOUND AT:: " + ip + "!!!" );
+			System.out.println( "\n\nNODE FOUND AT:: " + ip + "!!!" );
 
 			/*****************************************************************************
 			* If we get here, we are connected. Now we determine if is an Arduino server
@@ -56,13 +57,15 @@ class RegisterNode extends Thread
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 			InputStream in = sock.getInputStream();
 			
-			String message = Protocol.generateRegisterMsg(sock.getLocalAddress().toString(), serialStr);
+			String message = Protocol.generateRegisterMsg(sock.getLocalAddress().getHostAddress(), serialStr);
+			Transport.sendMessage(out, message);
+			Thread.sleep(1000);
 			Transport.sendMessage(out, message);
 			
 			// Receive ack message from node
 			message = Transport.getMessage(in);
 			if (message != null) {
-				// TODO: send the result to terminal
+				// TODO: send result to terminal and receive node info
 			}
 
 			/*****************************************************************************
@@ -76,9 +79,11 @@ class RegisterNode extends Thread
      	} catch (IOException e) {
 
 			// DEBUG
-			// System.out.println( "NO SERVER FOUND AT::" + ip );
+			//System.out.println( "NO SERVER FOUND AT::" + ip );
 			// System.exit(1);
-    	}
+    	} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 	} // main
 } // class
