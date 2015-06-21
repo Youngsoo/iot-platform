@@ -82,7 +82,7 @@ public class Broker {
 			}
 			
 			if (messageType.equals("register")) {
-				nodeMgr.handleRegisterRequest(Protocol.getSerial(message));
+				nodeMgr.handleRegisterRequest(Protocol.getSerial(message), out);
 				return;
 			}
 			
@@ -101,7 +101,8 @@ public class Broker {
 			if (messageType.equals("nodeRegistered")) {
 				ArrayList list = nodeMgr.getRegisteredNode();
 				String nodeRegMsg = Protocol.generateRegisteredNodeMsg(list);
-				//Transport.sendMessage(out, nodeRegMsg);
+				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), nodeRegMsg);
+				return;
 			}
 
 		}
@@ -113,14 +114,6 @@ public class Broker {
 		String deviceKey = Protocol.getNodeId(message);
 		
 		if (deviceTypeStr.equals("node")) {
-			String messageType = Protocol.getMessageType(message);
-			if (messageType != null && messageType.equals("register")) {
-				// NOTE: This means it is a node info message
-				String nodeName = Protocol.getNodeName(message);
-				nodeMgr.registerNode(deviceKey, nodeName);
-				return;
-			}
-
 			if (deviceKey != null && nodeMgr.isRegisteredNode(deviceKey)) {
 				nodeMgr.addNode(deviceKey, out);
 				return;

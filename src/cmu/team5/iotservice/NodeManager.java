@@ -62,6 +62,7 @@ public class NodeManager
 	
 	public boolean isRegisteredNode(String nodeId)
 	{
+		// TODO: check nodeList
 		return true;
 	}
 	
@@ -75,9 +76,9 @@ public class NodeManager
 		dataMgr.saveLog(nodeId, sensorType, sensorValue);
 	}
 	
-	public void handleRegisterRequest(String serialStr)
+	public void handleRegisterRequest(String serialStr, OutputStream terminalOut)
 	{
-		searchNode.startSearch(serialStr);
+		searchNode.startSearch(serialStr, this, terminalOut);
 	}
 	
 	public void handleUnregisterRequest(String nodeId, String serialStr) throws IOException

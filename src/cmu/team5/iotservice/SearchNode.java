@@ -5,15 +5,19 @@ import java.net.*;
 
 class SearchNode
 {
-	public void startSearch(String serialStr) {
-		new SearchRunner(serialStr).start();
+	public void startSearch(String serialStr, NodeManager nodeMgr, OutputStream terminalOut) {
+		new SearchRunner(serialStr, nodeMgr, terminalOut).start();
 	}
 	
 	private class SearchRunner extends Thread {
 		private String serialStr;
+		private NodeManager nodeMgr;
+		private OutputStream terminalOut;
 		
-		public SearchRunner(String serialStr) {
+		public SearchRunner(String serialStr,NodeManager nodeMgr, OutputStream terminalOut) {
 			this.serialStr = serialStr;
+			this.nodeMgr = nodeMgr;
+			this.terminalOut = terminalOut;
 		}
 		public void run()
 	    {
@@ -47,7 +51,7 @@ class SearchNode
 		   	
 		   	isNodeFixedIP = false;
 		   	if (isNodeFixedIP) {
-		   		tcList[0] = new RegisterNode("192.168.1.132", portNum, serialStr);
+		   		tcList[0] = new RegisterNode("192.168.1.132", portNum, serialStr, nodeMgr, terminalOut);
 		   		tcList[0].start();
 		   		return;
 		   	}
@@ -173,7 +177,7 @@ class SearchNode
 			* upto searchSize at a time.
 			***********************************************************************************************************/
 
-				   			tcList[i] = new RegisterNode(searchIpAddr, portNum, serialStr);
+				   			tcList[i] = new RegisterNode(searchIpAddr, portNum, serialStr, nodeMgr, terminalOut);
 				   			tcList[i].start();
 
 			/***********************************************************************************************************

@@ -11,14 +11,18 @@ class RegisterNode extends Thread
 	String ip;	// IP address and port to try to connect to.
 	int port;
 	String serialStr;
+	NodeManager nodeMgr;
+	OutputStream terminalOut;
 
 	// Here we set up the thread and local parameters
 
-	public RegisterNode ( String ip, int port, String serialStr )
+	public RegisterNode ( String ip, int port, String serialStr, NodeManager nodeMgr, OutputStream terminalOut )
 	{
 		this.ip = ip;
 		this.port = port;
 		this.serialStr = serialStr;
+		this.nodeMgr = nodeMgr;
+		this.terminalOut = terminalOut;
 		setDaemon(false);
 
 	} // constructor
@@ -65,7 +69,22 @@ class RegisterNode extends Thread
 			// Receive ack message from node
 			message = Transport.getMessage(in);
 			if (message != null) {
-				// TODO: send result to terminal and receive node info
+				String deviceType = Protocol.getDeviceType(message);
+				String deviceKey = Protocol.getNodeId(message);
+						
+				if (deviceType != null && deviceType.equals("node")) {
+					String messageType = Protocol.getMessageType(message);
+					if (messageType != null && messageType.equals("register")) {
+						// NOTE: This means it is a node info message
+						String nodeName = Protocol.getNodeName(message);
+						nodeMgr.registerNode(deviceKey, nodeName);
+						return;
+					}
+				}
+				
+				// Send result to terminal
+				String response = Protocol.generateRegisterResultMsg(true, null);
+				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(terminalOut)), response);
 			}
 
 			/*****************************************************************************

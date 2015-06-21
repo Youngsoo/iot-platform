@@ -87,6 +87,17 @@ public class Protocol {
 		String message = json.toString();
 		return message;
 	}
+	
+	public static String generateRegisterResultMsg(boolean result, String reason)
+	{
+		JSONObject json = new JSONObject();
+		json.put("messageType", "register");
+		if (result) json.put("result", "success");
+		else json.put("result",  "fail");
+		if (reason != null) json.put("reason", reason);
+		String message = json.toString();
+		return message;
+	}
 
 	public static String getUserId(String msg)
 	{
