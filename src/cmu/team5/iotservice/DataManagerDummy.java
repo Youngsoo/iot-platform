@@ -1,21 +1,33 @@
 package cmu.team5.iotservice;
 
 import java.util.ArrayList;
-
-import javax.swing.text.html.HTMLDocument.Iterator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class DataManagerDummy implements DataManagerIF
 {
-	private ArrayList<String> registeredNodeList;
+	//private ArrayList<String> registeredNodeList;
+	private HashMap<String, HashMap> nodeInfo;
 	
 	public DataManagerDummy()
 	{
-		registeredNodeList = new ArrayList<String>();
+		//registeredNodeList = new ArrayList<String>();
+		nodeInfo = new HashMap<String, HashMap>();
+		
+		HashMap<String, String> sensorInfo = new HashMap();
+		nodeInfo.put("a2de", sensorInfo);
 	}
 	
 	public Boolean saveLog(String nodeId, String sensorType, String value)
 	{
 		System.out.println("[LOG] nodeId:" + nodeId + ", sensorType:" + sensorType + ", value:" + value);
+		
+		if (nodeInfo.containsKey(nodeId)) {
+			HashMap<String, String>sensorInfo = nodeInfo.get(nodeId);
+			sensorInfo.put(sensorType, value);
+		}
+		
 		return true;
 	}
 
@@ -37,11 +49,31 @@ public class DataManagerDummy implements DataManagerIF
 	
 	public void addRegisteredNode(String nodeId)
 	{
-		registeredNodeList.add(nodeId);
+		if (!nodeInfo.containsKey(nodeId)) {
+			HashMap<String, String> sensorInfo = new HashMap();
+			nodeInfo.put(nodeId, sensorInfo);
+		}
 	}
 	
 	public ArrayList<String> getRegisteredNode()
 	{
-		return new ArrayList<String>(registeredNodeList);
+		ArrayList<String>list = new ArrayList<String>();
+		Iterator it = nodeInfo.entrySet().iterator();
+		while(it.hasNext()) {
+			Map.Entry node = (Map.Entry)it.next();
+			list.add((String) node.getKey());
+		}
+		
+		return list;
+	}
+	
+	public HashMap<String, String> getNodeInfo(String nodeId)
+	{
+		HashMap info = new HashMap<String, String>();
+		if (nodeInfo.containsKey(nodeId)) {
+			HashMap<String, String> sensorInfo = nodeInfo.get(nodeId);
+			info = new HashMap<String, String>(sensorInfo);
+		}
+		return info;
 	}
 }

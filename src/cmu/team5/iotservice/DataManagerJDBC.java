@@ -1,6 +1,7 @@
 package cmu.team5.iotservice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DataManagerJDBC implements DataManagerIF
 {
@@ -31,5 +32,9 @@ public class DataManagerJDBC implements DataManagerIF
 	}
 
 	public void addRegisteredNode(String nodeId) {
+	}
+
+	public HashMap<String, String> getNodeInfo(String nodeId) {
+		return null;
 	}
 }

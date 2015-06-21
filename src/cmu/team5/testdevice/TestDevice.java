@@ -71,16 +71,22 @@ class TestDevice
 				message = "{\"messageType\":\"login\",\"deviceType\":\"terminal\",\"userId\":\"tony\",\"passwd\":\"lge123\"}";
 				
 			} else if (command.equals("node")) {
-				message =  "{\"deviceType\":\"node\",\"nodeId\":\"1234\"}";
+				message =  "{\"deviceType\":\"node\",\"nodeId\":\"a2de\"}";
 				
 			} else if (command.equals("sensor")) {
-				message = "{\"messageType\":\"sensor\",\"nodeId\":\"1234\",\"sensorType\":\"door1\",\"value\"}";
+				message = "{\"messageType\":\"sensor\",\"nodeId\":\"a2de\",\"sensorType\":\"door\",\"value\":\"open\"}";
 				
 			} else if (command.equals("register")) {
 				message = "{\"messageType\":\"register\",\"serial\":\"a2de\"}";
 				
 			} else if (command.equals("unregister")) {
 				message = "{\"messageType\":\"unregister\",\"nodeId\":\"a2de\",\"serial\":\"a2de\"}";
+				
+			} else if (command.equals("nodereg")) {
+				message = "{\"messageType\":\"nodeRegistered\"}";				
+				
+			} else if (command.equals("nodeStatus")) {
+				message = "{\"messageType\":\"nodeStatus\",\"nodeId\":\"a2de\"}";
 				
 			} else if (command.equals("protocol")) {
 				ArrayList nodeList = new ArrayList();

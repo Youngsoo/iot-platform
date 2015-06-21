@@ -98,6 +98,19 @@ public class Protocol {
 		String message = json.toString();
 		return message;
 	}
+	
+	public static String generateNodeStatusResultMsg(String nodeId, HashMap sensorInfo)
+	{
+		JSONObject json = new JSONObject();
+		json.put("messageType", "nodeStatus");
+		json.put("nodeId", nodeId);
+		
+		if (sensorInfo.size() > 0)
+			json.put("sensor", sensorInfo);
+		
+		String message = json.toString();
+		return message;
+	}
 
 	public static String getUserId(String msg)
 	{

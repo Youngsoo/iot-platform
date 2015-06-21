@@ -24,6 +24,7 @@ public class NodeManager
 	
 	private void sendNode(String nodeId, String message) throws IOException
 	{
+		/*
 		Iterator it = nodeList.entrySet().iterator();
 		while(it.hasNext()) {
 			Map.Entry node = (Map.Entry)it.next();
@@ -37,6 +38,9 @@ public class NodeManager
 				break;
 			}
 		}
+		*/
+		BufferedWriter out = nodeList.get(nodeId);
+		Transport.sendMessage(out, message);
 	}
 	
 	public void addNode(String nodeId, OutputStream out)
@@ -92,5 +96,10 @@ public class NodeManager
 	public ArrayList getRegisteredNode()
 	{
 		return dataMgr.getRegisteredNode();
+	}
+	
+	public HashMap getNodeInfo(String nodeId)
+	{
+		return dataMgr.getNodeInfo(nodeId);
 	}
 }

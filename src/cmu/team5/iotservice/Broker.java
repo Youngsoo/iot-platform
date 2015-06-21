@@ -3,6 +3,7 @@ package cmu.team5.iotservice;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -102,6 +103,14 @@ public class Broker {
 				ArrayList list = nodeMgr.getRegisteredNode();
 				String nodeRegMsg = Protocol.generateRegisteredNodeMsg(list);
 				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), nodeRegMsg);
+				return;
+			}
+			
+			if (messageType.equals("nodeStatus")) {
+				String nodeId = Protocol.getNodeId(message);
+				HashMap info = nodeMgr.getNodeInfo(nodeId);
+				String nodeStatusMsg = Protocol.generateNodeStatusResultMsg(nodeId, info); 
+				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), nodeStatusMsg);
 				return;
 			}
 
