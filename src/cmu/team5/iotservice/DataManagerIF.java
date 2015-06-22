@@ -5,6 +5,23 @@ import java.util.HashMap;
 
 public interface DataManagerIF
 {
+	public class LogData
+	{
+		String nodeId;
+		String type;
+		String time;
+		String name;
+		String value;
+		
+		public LogData(String nodeId, String type, String time, String name, String value)
+		{
+			this.nodeId = nodeId;
+			this.type = type;
+			this.time = time;
+			this.name = name;
+			this.value = value;
+		}
+	}
 	public Boolean saveSensorLog(String nodeId, String sensorType, String value);
 	public boolean isValidLogin(String userId, String passwd);
 	public String getLoginErrMsg(String userId, String passwd);

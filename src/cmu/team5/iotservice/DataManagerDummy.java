@@ -1,6 +1,8 @@
 package cmu.team5.iotservice;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -11,12 +13,16 @@ public class DataManagerDummy implements DataManagerIF
 		HashMap<String, String> sensorInfo = new HashMap();
 		HashMap<String, String> actuatorInfo = new HashMap();
 	}
-
+	
 	private HashMap<String, NodeInfo> nodeInfoList;
+	private ArrayList<LogData> logList;
+	
+	private static final int MAXLOGSIZE = 256;
 	
 	public DataManagerDummy()
 	{
 		nodeInfoList = new HashMap<String, NodeInfo>();
+		logList = new ArrayList<LogData>(MAXLOGSIZE);
 		
 		NodeInfo nodeInfo = new NodeInfo();
 		nodeInfo.actuatorInfo.put("light", "off");
@@ -33,6 +39,30 @@ public class DataManagerDummy implements DataManagerIF
 			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
 			nodeInfo.sensorInfo.put(sensorType, value);
 		}
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String time = dateFormat.format(new Date());
+		System.out.println("time :" + time);
+		LogData logData = new LogData(nodeId, "sensor", time, sensorType, value);
+		logList.add(logData);
+		
+		return true;
+	}
+	
+	public Boolean saveActuatorLog(String nodeId, String actuatorType, String value)
+	{
+		System.out.println("[LOG] nodeId:" + nodeId + ", actuatorType:" + actuatorType + ", value:" + value);
+		
+		if (nodeInfoList.containsKey(nodeId)) {
+			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
+			nodeInfo.sensorInfo.put(actuatorType, value);
+		}
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String time = dateFormat.format(new Date());
+		System.out.println("time :" + time);
+		LogData logData = new LogData(nodeId, "actuator", time, actuatorType, value);
+		logList.add(logData);
 		
 		return true;
 	}

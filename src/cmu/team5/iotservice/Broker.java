@@ -115,6 +115,13 @@ public class Broker {
 				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), nodeStatusMsg);
 				return;
 			}
+			
+			if (messageType.equals("logData")) {
+				String logDataMsg = null;
+				
+				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), logDataMsg);
+				return;
+			}
 
 		}
 	}
