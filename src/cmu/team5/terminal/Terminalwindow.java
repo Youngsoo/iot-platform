@@ -44,15 +44,19 @@ public class Terminalwindow extends JPanel {
 	}
 
 	
+	private void MakeEmptySensorTable(){
+		JTable table = getSensorTable();
+		DefaultTableModel t = (DefaultTableModel)table.getModel();
+		while(t.getRowCount() != 0){
+			t.removeRow(0);	
+		}
+	}
+	
+	
 	public void UpdateSensorTable(String NodeId, HashMap<String, String> SensorInfo){
 		
 		JTable table = getSensorTable();
 		DefaultTableModel t = (DefaultTableModel)table.getModel();
-		
-		//Remove Row First..
-		while(t.getRowCount() != 0){
-			t.removeRow(0);	
-		}
 		
 		for(Map.Entry<String, String> entry: SensorInfo.entrySet()) {
 		    System.out.println(entry.getKey() + " : " + entry.getValue());
@@ -85,7 +89,7 @@ public class Terminalwindow extends JPanel {
 		  JMenuBar menuBar = new JMenuBar();
 		  
 		  JMenu menu = new JMenu("Server Configuration");
-          JMenu nodemenu = new JMenu("Node Registration");
+          JMenu nodemenu = new JMenu("Node Operation");
 		  menuBar.add(menu);
 		  menuBar.add(nodemenu);
 		  
@@ -94,7 +98,7 @@ public class Terminalwindow extends JPanel {
 		  menu.add(serverIp);
 		  menu.add(serverPort);
 		  
-		  JMenuItem NodeReg = new JMenuItem("New Node Registration");
+		  JMenuItem NodeReg = new JMenuItem("Node Registration");
 		  JMenuItem NodeUreg = new JMenuItem("Node Un-Registration");
 		
 		  nodemenu.add(NodeReg);
@@ -116,6 +120,7 @@ public class Terminalwindow extends JPanel {
 		            		System.out.println(ret);
 		            		if (Protocol.getResult(ret).compareTo("success") == 0){
 		            			JOptionPane.showMessageDialog(Terminal.Window, "Node Registration Success..");
+		            			MakeEmptySensorTable();
 		            			GetNodeInformation(NodeId);		
 		            		}
 		            		else{
@@ -170,8 +175,6 @@ public class Terminalwindow extends JPanel {
 	            	                    NodeList,
 	            	                    NodeList[0]);
 	            	
-	            	SelectedNodeId = SelectedNodeId.substring(1);
-	            	SelectedNodeId = SelectedNodeId.substring(0, SelectedNodeId.length()-1);
 	            	}
 	            	else{
 	            		JOptionPane.showMessageDialog(Terminal.Window, "There is no Node present for Unregister");
@@ -272,7 +275,35 @@ public class Terminalwindow extends JPanel {
 		return UserLoggedIn;
 	}
 	
+	
+	private String[] GetNodeList(){
+		String[] NodeList = null;
+    	if (IsuserloggedIn()){
+    	try{
+    		InputStream in = ClientSocket.getInputStream();
+    		BufferedWriter out;
+			
+    		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
+    		String msg = Protocol.generateRegisteredNodeMsg();		
+    		Transport.sendMessage(out, msg);
+    		String ret = Transport.getMessage(in);
+    		System.out.println(ret);
+    		NodeList = Protocol.getNodeList(ret);	
+    	}catch (Exception e){
+    		e.printStackTrace();
+    	}
+      }
+    	return NodeList;		
+	}
   	
+	private void RefreshActionPerformed(ActionEvent e){
+		String []NodeList = GetNodeList();
+		MakeEmptySensorTable();
+		for (int i=0; i<NodeList.length; i++){
+			GetNodeInformation(NodeList[i]);		
+		}
+	}
+	
 	private void LoginActionPerformed(ActionEvent e) {
 		// TODO add your code here
 		ClientSocket = Connection();
@@ -373,6 +404,15 @@ public class Terminalwindow extends JPanel {
 		//---- Refresh ----
 		Refresh.setText("Refresh");
 		add(Refresh, CC.xy(7, 17));
+		
+		Refresh.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				RefreshActionPerformed(e);
+			}
+		});
+		
+		
 
 		//---- Update ----
 		Update.setText("Update");

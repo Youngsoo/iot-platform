@@ -169,10 +169,7 @@ public class Protocol {
 	public static HashMap<String,String> getSensorInfo(String msg)
 	{
 	
-		 HashMap<String, String> SensorInfo = new HashMap<String, String>();
-		 
-		        
-		
+		HashMap<String, String> SensorInfo = new HashMap<String, String>();
 		ContainerFactory containerFactory = new ContainerFactory(){
 		    public LinkedList creatArrayContainer() {
 		      return new LinkedList();
@@ -183,7 +180,6 @@ public class Protocol {
 		    }
 		                        
 		  };
-		
 		
 		String value = null;
 		JSONObject json1 = (JSONObject)JSONValue.parse(msg);
@@ -205,7 +201,6 @@ public class Protocol {
 		
 		}
 		return SensorInfo;
-		
 	}
 
 	public static String getMessageType(String msg)
@@ -234,7 +229,8 @@ public class Protocol {
 			value = json.get("nodeList").toString();
 			value = value.substring(1);
 			value = value.substring(0, value.length()-1);
-			
+			value = value.replaceAll("[\"]", "");
+		
 			String[] NodeList = value.split(",");
 			return NodeList;
 		}
