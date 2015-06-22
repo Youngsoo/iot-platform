@@ -88,6 +88,9 @@ class TestDevice
 			} else if (command.equals("nodeStatus")) {
 				message = "{\"messageType\":\"nodeStatus\",\"nodeId\":\"a2de\"}";
 				
+			} else if (command.equals("logData")) {
+				message = "{\"messageType\":\"logData\"}";
+				
 			} else if (command.equals("protocol")) {
 				ArrayList nodeList = new ArrayList();
 				//nodeList.add("1234");

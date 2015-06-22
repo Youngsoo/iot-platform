@@ -159,6 +159,31 @@ public class Protocol {
 		String message = json.toString();
 		return message;
 	}
+	
+	public static String generateLogDataMsg(ArrayList logList)
+	{
+		JSONObject json = new JSONObject();
+		json.put("messageType", "logData");
+		
+		ArrayList array = new ArrayList();
+		for (Iterator<LogData> it = logList.iterator(); it.hasNext();) {
+			HashMap map = new HashMap();
+			LogData logData = it.next();
+			
+			map.put("nodeId", logData.nodeId);
+			map.put("type", logData.type);
+			map.put("time", logData.time);
+			map.put("name", logData.name);
+			map.put("value", logData.value);			
+			
+			array.add(map);
+		}
+		
+		if (array.size() > 0)
+			json.put("log", array);
+		String message = json.toString();
+		return message;
+	}
 
 	public static String getUserId(String msg)
 	{

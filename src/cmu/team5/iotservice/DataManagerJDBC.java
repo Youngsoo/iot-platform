@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.sql.*;
 
+import cmu.team5.middleware.LogData;
+
 public class DataManagerJDBC implements DataManagerIF
 {
 	private HashMap<String, HashMap> nodeInfo;
@@ -132,6 +134,10 @@ public class DataManagerJDBC implements DataManagerIF
 
 	public void removeRegisteredNode(String nodeId) {
 		
+	}
+
+	public ArrayList<LogData> getLogDataAll() {
+		return null;
 	}
 
 }

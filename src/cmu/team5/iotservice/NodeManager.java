@@ -131,4 +131,9 @@ public class NodeManager
 	{
 		return dataMgr.getNodeActuatorInfo(nodeId);
 	}
+	
+	public ArrayList getLogDataAll()
+	{
+		return dataMgr.getLogDataAll();
+	}
 }

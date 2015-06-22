@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import cmu.team5.middleware.*;
+
 public class DataManagerDummy implements DataManagerIF
 {
 	private class NodeInfo {
@@ -126,6 +128,11 @@ public class DataManagerDummy implements DataManagerIF
 			info = new HashMap<String, String>(nodeInfo.actuatorInfo);
 		}
 		return info;
+	}
+	
+	public final ArrayList<LogData> getLogDataAll()
+	{
+		return new ArrayList<LogData>(logList);
 	}
 	
 	public boolean isRegisteredNode(String nodeId)

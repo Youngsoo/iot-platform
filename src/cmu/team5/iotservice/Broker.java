@@ -117,8 +117,8 @@ public class Broker {
 			}
 			
 			if (messageType.equals("logData")) {
-				String logDataMsg = null;
-				
+				ArrayList logList = nodeMgr.getLogDataAll();
+				String logDataMsg = Protocol.generateLogDataMsg(logList);
 				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), logDataMsg);
 				return;
 			}
