@@ -176,6 +176,43 @@ public class Protocol {
 		if (json.get("deviceType") != null)
 			value = json.get("deviceType").toString();
 		return value;
+	}	
+
+	public static HashMap<String,String> getActuratorInfo(String msg)
+	{
+	
+		HashMap<String, String> ActuratorInfo = new HashMap<String, String>();
+		ContainerFactory containerFactory = new ContainerFactory(){
+		    public LinkedList creatArrayContainer() {
+		      return new LinkedList();
+		    }
+
+		    public Map createObjectContainer() {
+		      return new LinkedHashMap();
+		    }
+		                        
+		  };
+		
+		String value = null;
+		JSONObject json1 = (JSONObject)JSONValue.parse(msg);
+		if (json1.get("actuator") != null){
+			value = json1.get("actuator").toString();
+		
+			try{
+				JSONParser parser = new JSONParser();
+			    Map json = (Map)parser.parse(value, containerFactory);
+			    Iterator iter = json.entrySet().iterator();
+			    while(iter.hasNext()){
+			      Map.Entry entry = (Map.Entry)iter.next();
+			      ActuratorInfo.put((String)entry.getKey(), (String)entry.getValue());
+			    }                        
+			  }
+			  catch(ParseException pe){
+			    System.out.println(pe);
+			  }
+		
+		}
+		return ActuratorInfo;
 	}
 	
 	public static HashMap<String,String> getSensorInfo(String msg)

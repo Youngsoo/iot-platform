@@ -38,6 +38,8 @@ public class Terminalwindow extends JPanel {
 	
 	private JTable NodeInfo;
 	
+	private NodeControlUi NodeControler = null;
+	
 	
 	public Terminalwindow() {
 		initComponents();
@@ -53,6 +55,31 @@ public class Terminalwindow extends JPanel {
 	}
 	
 	
+/*	private String[] GetNodeList(){
+    	String[] NodeList = null;
+    	String SelectedNodeId = null;
+    	if (IsuserloggedIn()){
+    	try{
+    		InputStream in = ClientSocket.getInputStream();
+    		BufferedWriter out;
+			
+    		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
+    		String msg = Protocol.generateRegisteredNodeMsg();		
+    		Transport.sendMessage(out, msg);
+    		String ret = Transport.getMessage(in);
+    		System.out.println(ret);
+    		NodeList = Protocol.getNodeList(ret);	
+    	}catch (Exception e){
+    		e.printStackTrace();
+    	}
+    	
+        
+    	if (NodeList != null && NodeList.length >= 1){
+
+    	}	
+		return NodeList;
+	}
+	*/
 	public void UpdateSensorTable(String NodeId, HashMap<String, String> SensorInfo){
 		
 		JTable table = getSensorTable();
@@ -75,7 +102,15 @@ public class Terminalwindow extends JPanel {
     		System.out.println("sensor info " + ret);		
     		HashMap<String, String> SensorInfo = new HashMap<String, String>();
     		SensorInfo = Protocol.getSensorInfo(ret);
+    		
     		UpdateSensorTable(NodeId, SensorInfo);
+		
+    		HashMap<String, String> ActuratorInfo = new HashMap<String, String>();
+    		ActuratorInfo = Protocol.getActuratorInfo(ret);
+    		
+    		UpdateActuratorTable(NodeId, ActuratorInfo);
+    		
+		
 		
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -109,6 +144,7 @@ public class Terminalwindow extends JPanel {
 	            public void actionPerformed(ActionEvent arg0) {
 	            	String NodeId = null;
 	            	if (IsuserloggedIn()){
+	            		UIManager.put("OptionPane.okButtonText", "Register");
 	            		NodeId = JOptionPane.showInputDialog("Enter Node ID(Serial No):");
 	            		try {
 							InputStream in = ClientSocket.getInputStream();
@@ -120,10 +156,12 @@ public class Terminalwindow extends JPanel {
 		            		System.out.println(ret);
 		            		if (Protocol.getResult(ret).compareTo("success") == 0){
 		            			JOptionPane.showMessageDialog(Terminal.Window, "Node Registration Success..");
+		            			//wait(1000);
 		            			MakeEmptySensorTable();
 		            			GetNodeInformation(NodeId);		
 		            		}
 		            		else{
+		            			UIManager.put("OptionPane.okButtonText", "Ok");
 		            			JOptionPane.showMessageDialog(Terminal.Window, "Node Registration Failed!!!");
 		            		}
 		     
@@ -134,6 +172,7 @@ public class Terminalwindow extends JPanel {
 	        			
 	            	}
 	            	else{
+	            		UIManager.put("OptionPane.okButtonText", "Ok");
 	        			JOptionPane.showMessageDialog(Terminal.Window, "Need to login First..");
 	            	}
 	                
@@ -177,6 +216,7 @@ public class Terminalwindow extends JPanel {
 	            	
 	            	}
 	            	else{
+	            		UIManager.put("OptionPane.okButtonText", "Ok");
 	            		JOptionPane.showMessageDialog(Terminal.Window, "There is no Node present for Unregister");
 	            	}
 	            	
@@ -193,12 +233,16 @@ public class Terminalwindow extends JPanel {
 		            		Transport.sendMessage(out, msg);
 		            //		String ret = Transport.getMessage(in);
 		           // 		System.out.println(ret);
+		            		
+		            		RefreshActionPerformed(arg0);
+		            		
 		            	}catch (Exception e){}
 		            	
 	            	    return;
 	            	}  		
 	            }
 	            	else{
+	            		UIManager.put("OptionPane.okButtonText", "Ok");
 	            		JOptionPane.showMessageDialog(Terminal.Window, "Need to login First..");
 	            	}
 	            }
@@ -209,12 +253,14 @@ public class Terminalwindow extends JPanel {
 		  
 		  serverIp.addActionListener(new ActionListener() {
 	            public void actionPerformed(ActionEvent arg0) {
+	            	UIManager.put("OptionPane.okButtonText", "Ok");
 	                ServerIp = JOptionPane.showInputDialog(null, "Enter the Server IP:",ServerIp);
 	            }
 	        });
 		  
 		  serverPort.addActionListener(new ActionListener() {
 	            public void actionPerformed(ActionEvent arg0) {
+	            	UIManager.put("OptionPane.okButtonText", "Ok");
 	                ServerPort = JOptionPane.showInputDialog(null,"Enter the Server Port:",ServerPort);
 	            }
 	        });
@@ -231,10 +277,12 @@ public class Terminalwindow extends JPanel {
 				clientSocket = new Socket(ServerIp, Integer.valueOf(ServerPort));
 			}
 			else{
+				UIManager.put("OptionPane.okButtonText", "Ok");
 				JOptionPane.showMessageDialog(Terminal.Window, "Set the Server Configuration");
 			}
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
+			UIManager.put("OptionPane.okButtonText", "Ok");
 			JOptionPane.showMessageDialog(Terminal.Window, "Check the Server Configuration");
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -260,9 +308,11 @@ public class Terminalwindow extends JPanel {
 		return NodeInfo;
 	}
 	
+	
+	
 	public JTable MakeActuratorTable(){
-		 NodeControlUi stm = new NodeControlUi();
-	     JTable sourceTable = new JTable(stm);
+		 NodeControler = new NodeControlUi();
+	     JTable sourceTable = new JTable(NodeControler);
 	     return sourceTable;
 	}
 	
@@ -295,7 +345,68 @@ public class Terminalwindow extends JPanel {
       }
     	return NodeList;		
 	}
+	
+	private void UpdateActuratorTable(String NodeId, HashMap <String, String> ActratorInfo)
+	{
+		
+		NodeControler.UpdateSourceList(NodeId, ActratorInfo);
+		
+	}
   	
+	private void NodeUpdateRequest(String NodeId, String ActuratorName, String Value){
+		if (IsuserloggedIn()){
+	    	try{
+	    		InputStream in = ClientSocket.getInputStream();
+	    		BufferedWriter out;
+				
+	    		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
+	    		String msg = Protocol.generateCommandMsg(NodeId, ActuratorName, Value);		
+	    		Transport.sendMessage(out, msg);
+	    //		String ret = Transport.getMessage(in);
+	    //		System.out.println(ret);
+	    	}catch (Exception e){
+	    		e.printStackTrace();
+	    	}
+	      }
+	}
+	
+	private void UpdateActionPerformed(ActionEvent e){
+		String OptValue= null;
+		String [] NodeList = GetNodeList();
+		
+		for (int i=0; i<NodeControler.getRowCount(); i++){
+				boolean Value = (boolean)NodeControler.getValueAt(i,0);
+				String  ActName = (String)NodeControler.getValueAt(i,2);
+				String NodeId = (String)NodeControler.getValueAt(i, 3);
+				
+				switch(ActName){
+				case "door":
+					if (Value == true){
+						OptValue = "close";
+					}
+					else{
+						OptValue = "opem";
+					}
+					break;
+				case "light":
+				case "alarm":
+					if (Value == true){
+						OptValue = "on";
+						
+					}
+					else{
+						OptValue = "off";
+					}
+					break;
+				}
+				
+				NodeUpdateRequest(NodeId,ActName,OptValue);
+		}
+		
+	}
+	
+	
+	
 	private void RefreshActionPerformed(ActionEvent e){
 		String []NodeList = GetNodeList();
 		MakeEmptySensorTable();
@@ -417,6 +528,15 @@ public class Terminalwindow extends JPanel {
 		//---- Update ----
 		Update.setText("Update");
 		add(Update, CC.xy(13, 17));
+		
+		Update.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				UpdateActionPerformed(e);
+			}
+		});
+		
+		
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 

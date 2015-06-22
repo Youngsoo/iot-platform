@@ -3,7 +3,10 @@ package cmu.team5.terminal;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.awt.Component;
 
 import javax.swing.DefaultCellEditor;
@@ -100,18 +103,76 @@ default:
  * List for populating the table.
  * @return list of sourceDO's.
  */
+
+
+public void UpdateSourceList(String NodeId, HashMap<String, String> data){
+	   
+	String ActName,Value;
+	ActName=Value=null;
+	
+	 Iterator iter = data.entrySet().iterator();
+	 while(iter.hasNext()){
+	      Map.Entry entry = (Map.Entry)iter.next();
+	      ActName = (String)entry.getKey();
+	      Value = (String)entry.getValue();
+	      SourceModel source = new SourceModel();
+
+
+	      switch(ActName){
+	    //Door Act (open/close)	
+	      case "door":	
+	     	  if (Value.equals("close")){
+	  			source.setSelect(true);
+	  		    source.setInActive(false);
+	  		    source.setFactory("door");
+	  		    source.setSupplier(NodeId);
+	  		  }
+	  		  else{
+	  			source.setSelect(false);
+	  		    source.setInActive(true);
+	  		    source.setFactory("door");
+	  		    source.setSupplier(NodeId);
+	  		  }
+	     	 this.sourceList.add(source);
+	     	 break;
+	     	//light/alarm Act (on/off)	 
+	      case "light":
+	      case "alarm": 
+	     	  if (Value.equals("on")){
+	  			source.setSelect(true);
+	  		    source.setInActive(false);
+	  		    source.setFactory(ActName);
+	  		    source.setSupplier(NodeId);
+	  		  }
+	  		  else{
+	  			source.setSelect(false);
+	  		    source.setInActive(true);
+	  		    source.setFactory(ActName);
+	  		    source.setSupplier(NodeId);
+	  		  }
+	     	 this.sourceList.add(source);
+	     	 break; 	 
+	      default:
+	    	break;  
+	     }
+	 }    	
+}
+
 private List<SourceModel> getSourceDOList() {
    List<SourceModel> tempSourceList = new ArrayList<SourceModel>();
-   for (int index = 0; index < 5; index++) {
+   
+   //   for (int index = 0; index < 3; index++) {
 
-    SourceModel source = new SourceModel();
-    source.setSelect(false);
+  //Set Default Value for Door 
+/*    SourceModel source = new SourceModel();
+    source.setSelect(true);
     source.setInActive(false);
-    source.setFactory("Acturator " + index);
-    source.setSupplier("NodeId " + index);
-
+    source.setFactory("Door");
+    source.setSupplier("NodeId ");
     tempSourceList.add(source);
-}
+*/    
+       
+//}
 return tempSourceList;
 }
 }
