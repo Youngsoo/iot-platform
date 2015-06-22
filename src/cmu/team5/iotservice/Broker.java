@@ -58,7 +58,7 @@ public class Broker {
 		String message = iotMsg.getMessage();
 		OutputStream out = iotMsg.getStream();
 		
-		System.out.println("Received << " + message);
+		//System.out.println("Received << " + message);
 		
 		String deviceTypeStr = Protocol.getDeviceType(message);
 		if (deviceTypeStr != null) {
@@ -89,8 +89,9 @@ public class Broker {
 			
 			if (messageType.equals("unregister")) {
 				String nodeId = Protocol.getNodeId(message);
-				String serialStr = Protocol.getSerial(message);
-				nodeMgr.handleUnregisterRequest(nodeId, serialStr);
+				if (nodeMgr.isRegisteredNode(nodeId)) {
+					nodeMgr.handleUnregisterRequest(nodeId);
+				}
 				return;
 			}
 			
@@ -108,8 +109,8 @@ public class Broker {
 			
 			if (messageType.equals("nodeStatus")) {
 				String nodeId = Protocol.getNodeId(message);
-				HashMap info = nodeMgr.getNodeInfo(nodeId);
-				String nodeStatusMsg = Protocol.generateNodeStatusResultMsg(nodeId, info); 
+				HashMap sensorInfo = nodeMgr.getNodeSensorInfo(nodeId);
+				String nodeStatusMsg = Protocol.generateNodeStatusResultMsg(nodeId, sensorInfo); 
 				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), nodeStatusMsg);
 				return;
 			}

@@ -22,8 +22,9 @@ public class NodeManager
 		searchNode = new SearchNode();
 	}
 	
-	private void sendNode(String nodeId, String message) throws IOException
+	private boolean sendNode(String nodeId, String message) throws IOException
 	{
+			boolean ret = false;
 		/*
 		Iterator it = nodeList.entrySet().iterator();
 		while(it.hasNext()) {
@@ -40,7 +41,15 @@ public class NodeManager
 		}
 		*/
 		BufferedWriter out = nodeList.get(nodeId);
-		Transport.sendMessage(out, message);
+		if (out != null) {
+			Transport.sendMessage(out, message);
+			ret = true;
+		} else {
+			System.out.println("Node(id:" + nodeId + ") is not ready.");
+			ret = false;
+		}
+		
+		return ret;
 	}
 	
 	public void addNode(String nodeId, OutputStream out)
@@ -53,8 +62,18 @@ public class NodeManager
 	
 	public void removeNode(String nodeId)
 	{
+		System.out.println("Remove node device");
 		synchronized(nodeList) {
+			/*
+			BufferedWriter writer = nodeList.get(nodeId);
+			try {
+				if (writer != null) writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			*/
 			nodeList.remove(nodeId);
+			dataMgr.removeRegisteredNode(nodeId);
 		}
 	}
 	
@@ -66,8 +85,7 @@ public class NodeManager
 	
 	public boolean isRegisteredNode(String nodeId)
 	{
-		// TODO: check nodeList
-		return true;
+		return dataMgr.isRegisteredNode(nodeId);
 	}
 	
 	public void sendCommandMsg(String nodeId, String message) throws IOException
@@ -77,7 +95,7 @@ public class NodeManager
 	
 	public void handleSensorMsg(String nodeId, String sensorType, String sensorValue)
 	{
-		dataMgr.saveLog(nodeId, sensorType, sensorValue);
+		dataMgr.saveSensorLog(nodeId, sensorType, sensorValue);
 	}
 	
 	public void handleRegisterRequest(String serialStr, OutputStream terminalOut)
@@ -85,12 +103,16 @@ public class NodeManager
 		searchNode.startSearch(serialStr, this, terminalOut);
 	}
 	
-	public void handleUnregisterRequest(String nodeId, String serialStr) throws IOException
+	public void handleUnregisterRequest(String nodeId) throws IOException
 	{
-		String message = Protocol.generateUnregisterMsg(serialStr);
+		String message = Protocol.generateUnregisterMsg();
 		sendNode(nodeId, message);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		removeNode(nodeId);
-		
 	}
 	
 	public ArrayList getRegisteredNode()
@@ -98,8 +120,8 @@ public class NodeManager
 		return dataMgr.getRegisteredNode();
 	}
 	
-	public HashMap getNodeInfo(String nodeId)
+	public HashMap getNodeSensorInfo(String nodeId)
 	{
-		return dataMgr.getNodeInfo(nodeId);
+		return dataMgr.getNodeSensorInfo(nodeId);
 	}
 }

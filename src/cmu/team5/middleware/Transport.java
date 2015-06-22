@@ -128,6 +128,8 @@ public class Transport
 			totalBytes += readBytes;
 		}
 		
-		return new String(buffer, 0, msgLength);
+		String recvMsg = new String(buffer, 0, msgLength);
+		System.out.println("Received << " + recvMsg);
+		return recvMsg;
 	}
 }

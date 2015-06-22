@@ -7,25 +7,31 @@ import java.util.Map;
 
 public class DataManagerDummy implements DataManagerIF
 {
-	//private ArrayList<String> registeredNodeList;
-	private HashMap<String, HashMap> nodeInfo;
+	private class NodeInfo {
+		HashMap<String, String> sensorInfo = new HashMap();
+		HashMap<String, String> actuatorInfo = new HashMap();
+	}
+
+	private HashMap<String, NodeInfo> nodeInfoList;
 	
 	public DataManagerDummy()
 	{
-		//registeredNodeList = new ArrayList<String>();
-		nodeInfo = new HashMap<String, HashMap>();
+		nodeInfoList = new HashMap<String, NodeInfo>();
 		
-		HashMap<String, String> sensorInfo = new HashMap();
-		nodeInfo.put("a2de", sensorInfo);
+		NodeInfo nodeInfo = new NodeInfo();
+		nodeInfoList.put("a2de", nodeInfo);
+		nodeInfo.actuatorInfo.put("light", "off");
+		nodeInfo.actuatorInfo.put("alarm", "off");
+		nodeInfo.actuatorInfo.put("door", "close");
 	}
 	
-	public Boolean saveLog(String nodeId, String sensorType, String value)
+	public Boolean saveSensorLog(String nodeId, String sensorType, String value)
 	{
 		System.out.println("[LOG] nodeId:" + nodeId + ", sensorType:" + sensorType + ", value:" + value);
 		
-		if (nodeInfo.containsKey(nodeId)) {
-			HashMap<String, String>sensorInfo = nodeInfo.get(nodeId);
-			sensorInfo.put(sensorType, value);
+		if (nodeInfoList.containsKey(nodeId)) {
+			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
+			nodeInfo.sensorInfo.put(sensorType, value);
 		}
 		
 		return true;
@@ -49,16 +55,21 @@ public class DataManagerDummy implements DataManagerIF
 	
 	public void addRegisteredNode(String nodeId)
 	{
-		if (!nodeInfo.containsKey(nodeId)) {
-			HashMap<String, String> sensorInfo = new HashMap();
-			nodeInfo.put(nodeId, sensorInfo);
+		if (!nodeInfoList.containsKey(nodeId)) {
+			NodeInfo nodeInfo = new NodeInfo();
+			nodeInfoList.put(nodeId, nodeInfo);
 		}
+	}
+	
+	public void removeRegisteredNode(String nodeId)
+	{
+		nodeInfoList.remove(nodeId);
 	}
 	
 	public ArrayList<String> getRegisteredNode()
 	{
 		ArrayList<String>list = new ArrayList<String>();
-		Iterator it = nodeInfo.entrySet().iterator();
+		Iterator it = nodeInfoList.entrySet().iterator();
 		while(it.hasNext()) {
 			Map.Entry node = (Map.Entry)it.next();
 			list.add((String) node.getKey());
@@ -67,13 +78,19 @@ public class DataManagerDummy implements DataManagerIF
 		return list;
 	}
 	
-	public HashMap<String, String> getNodeInfo(String nodeId)
+	public HashMap<String, String> getNodeSensorInfo(String nodeId)
 	{
 		HashMap info = new HashMap<String, String>();
-		if (nodeInfo.containsKey(nodeId)) {
-			HashMap<String, String> sensorInfo = nodeInfo.get(nodeId);
-			info = new HashMap<String, String>(sensorInfo);
+		if (nodeInfoList.containsKey(nodeId)) {
+			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
+			info = new HashMap<String, String>(nodeInfo.sensorInfo);
 		}
 		return info;
+	}
+	
+	public boolean isRegisteredNode(String nodeId)
+	{
+		if (nodeInfoList.containsKey(nodeId)) return true;
+		else return false;
 	}
 }

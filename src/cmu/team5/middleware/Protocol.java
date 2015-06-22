@@ -12,8 +12,6 @@ import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
-
 public class Protocol {
 	public static String generateTerminalInitMsg(String userId)
 	{
@@ -45,10 +43,9 @@ public class Protocol {
 		return message;
 	}
 	
-	public static String generateUnregisterMsg(String serialStr) {
+	public static String generateUnregisterMsg() {
 		JSONObject json = new JSONObject();
 		json.put("messageType", "unregister");
-		json.put("serial", serialStr);
 		String message = json.toString();
 		return message;
 	}
@@ -88,7 +85,7 @@ public class Protocol {
 	{
 		JSONObject json = new JSONObject();
 		json.put("messageType", "nodeRegistered");
-		
+		/*
 		ArrayList array = new ArrayList();
 		for (Iterator<String> it = nodeList.iterator(); it.hasNext();) {
 			HashMap map = new HashMap();
@@ -96,7 +93,10 @@ public class Protocol {
 			array.add(map);
 		}
 		if (array.size() > 0)
-			json.put("node", array);
+			json.put("nodeList", array);
+		*/
+		if (nodeList.size() > 0)
+			json.put("nodeList", nodeList);
 		
 		String message = json.toString();
 		return message;

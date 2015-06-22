@@ -78,7 +78,6 @@ class RegisterNode extends Thread
 						// NOTE: This means it is a node info message
 						String nodeName = Protocol.getNodeName(message);
 						nodeMgr.registerNode(deviceKey, nodeName);
-						return;
 					}
 				}
 				
