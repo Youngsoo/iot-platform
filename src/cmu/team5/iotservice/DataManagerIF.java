@@ -11,6 +11,7 @@ public interface DataManagerIF
 	public ArrayList<String> getRegisteredNode();
 	public void addRegisteredNode(String nodeId);
 	public HashMap<String, String> getNodeSensorInfo(String nodeId);
+	public HashMap<String, String> getNodeActuatorInfo(String nodeId);
 	public boolean isRegisteredNode(String nodeId);
 	public void removeRegisteredNode(String nodeId);
 }

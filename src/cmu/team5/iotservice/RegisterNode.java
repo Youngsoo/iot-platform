@@ -82,7 +82,7 @@ class RegisterNode extends Thread
 				}
 				
 				// Send result to terminal
-				String response = Protocol.generateRegisterResultMsg(true, null);
+				String response = Protocol.generateResultMsg("register", true, null);
 				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(terminalOut)), response);
 			}
 

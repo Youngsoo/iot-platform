@@ -58,6 +58,17 @@ public class Protocol {
 		return message;
 	}
 	
+	public static String generateResultMsg(String messageType, boolean result, String reason)
+	{
+		JSONObject json = new JSONObject();
+		json.put("messageType", messageType);
+		if (result) json.put("result", "success");
+		else json.put("result",  "fail");
+		if (reason != null) json.put("reason", reason);
+		String message = json.toString();
+		return message;
+	}
+	
 	public static String generateLoginResultMsg(String userId, boolean result, String reason)
 	{
 		JSONObject json = new JSONObject();
@@ -102,6 +113,7 @@ public class Protocol {
 		return message;
 	}
 	
+	/*
 	public static String generateRegisterResultMsg(boolean result, String reason)
 	{
 		JSONObject json = new JSONObject();
@@ -112,7 +124,7 @@ public class Protocol {
 		String message = json.toString();
 		return message;
 	}
-	
+	*/
 	
 	public static String generateNodeInfoMsg(String NodeId)
 	{
@@ -124,7 +136,7 @@ public class Protocol {
 		
 	}
 	
-	public static String generateNodeStatusResultMsg(String nodeId, HashMap sensorInfo)
+	public static String generateNodeStatusResultMsg(String nodeId, HashMap sensorInfo, HashMap actuatorInfo)
 	{
 		JSONObject json = new JSONObject();
 		json.put("messageType", "nodeStatus");
@@ -132,6 +144,9 @@ public class Protocol {
 		
 		if (sensorInfo.size() > 0)
 			json.put("sensor", sensorInfo);
+		
+		if (actuatorInfo.size() > 0)
+			json.put("actuator", actuatorInfo);
 		
 		String message = json.toString();
 		return message;
@@ -162,9 +177,6 @@ public class Protocol {
 			value = json.get("deviceType").toString();
 		return value;
 	}
-	
-	
-	 	  
 	
 	public static HashMap<String,String> getSensorInfo(String msg)
 	{
@@ -236,7 +248,6 @@ public class Protocol {
 		}
 		return null;
 	}
-	
 
 	public static String getNodeId(String msg)
 	{

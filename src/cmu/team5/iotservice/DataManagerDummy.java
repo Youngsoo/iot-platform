@@ -19,10 +19,10 @@ public class DataManagerDummy implements DataManagerIF
 		nodeInfoList = new HashMap<String, NodeInfo>();
 		
 		NodeInfo nodeInfo = new NodeInfo();
-		nodeInfoList.put("a2de", nodeInfo);
 		nodeInfo.actuatorInfo.put("light", "off");
 		nodeInfo.actuatorInfo.put("alarm", "off");
 		nodeInfo.actuatorInfo.put("door", "close");
+		nodeInfoList.put("a2de", nodeInfo);
 	}
 	
 	public Boolean saveSensorLog(String nodeId, String sensorType, String value)
@@ -84,6 +84,16 @@ public class DataManagerDummy implements DataManagerIF
 		if (nodeInfoList.containsKey(nodeId)) {
 			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
 			info = new HashMap<String, String>(nodeInfo.sensorInfo);
+		}
+		return info;
+	}
+	
+	public HashMap<String, String> getNodeActuatorInfo(String nodeId)
+	{
+		HashMap info = new HashMap<String, String>();
+		if (nodeInfoList.containsKey(nodeId)) {
+			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
+			info = new HashMap<String, String>(nodeInfo.actuatorInfo);
 		}
 		return info;
 	}

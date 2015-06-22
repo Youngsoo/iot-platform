@@ -120,6 +120,10 @@ public class DataManagerJDBC implements DataManagerIF
 		}
 		return info;
 	}
+	
+	public HashMap<String, String> getNodeActuatorInfo(String nodeId) {
+		return null;
+	}
 
 	public boolean isRegisteredNode(String nodeId)
 	{
@@ -129,4 +133,5 @@ public class DataManagerJDBC implements DataManagerIF
 	public void removeRegisteredNode(String nodeId) {
 		
 	}
+
 }

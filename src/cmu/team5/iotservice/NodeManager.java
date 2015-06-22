@@ -103,16 +103,18 @@ public class NodeManager
 		searchNode.startSearch(serialStr, this, terminalOut);
 	}
 	
-	public void handleUnregisterRequest(String nodeId) throws IOException
+	public void handleUnregisterRequest(String nodeId, BufferedWriter out) throws IOException
 	{
 		String message = Protocol.generateUnregisterMsg();
-		sendNode(nodeId, message);
+		boolean result = sendNode(nodeId, message);
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		removeNode(nodeId);
+		String resultMsg = Protocol.generateResultMsg("unregister", result, null);
+		Transport.sendMessage(out, resultMsg);
 	}
 	
 	public ArrayList getRegisteredNode()
@@ -123,5 +125,10 @@ public class NodeManager
 	public HashMap getNodeSensorInfo(String nodeId)
 	{
 		return dataMgr.getNodeSensorInfo(nodeId);
+	}
+	
+	public HashMap getNodeActuatorInfo(String nodeId)
+	{
+		return dataMgr.getNodeActuatorInfo(nodeId);
 	}
 }

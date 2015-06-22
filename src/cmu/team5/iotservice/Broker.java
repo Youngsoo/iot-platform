@@ -90,7 +90,7 @@ public class Broker {
 			if (messageType.equals("unregister")) {
 				String nodeId = Protocol.getNodeId(message);
 				if (nodeMgr.isRegisteredNode(nodeId)) {
-					nodeMgr.handleUnregisterRequest(nodeId);
+					nodeMgr.handleUnregisterRequest(nodeId, new BufferedWriter(new OutputStreamWriter(out)));
 				}
 				return;
 			}
@@ -110,7 +110,8 @@ public class Broker {
 			if (messageType.equals("nodeStatus")) {
 				String nodeId = Protocol.getNodeId(message);
 				HashMap sensorInfo = nodeMgr.getNodeSensorInfo(nodeId);
-				String nodeStatusMsg = Protocol.generateNodeStatusResultMsg(nodeId, sensorInfo); 
+				HashMap actuatorInfo = nodeMgr.getNodeActuatorInfo(nodeId);
+				String nodeStatusMsg = Protocol.generateNodeStatusResultMsg(nodeId, sensorInfo, actuatorInfo); 
 				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), nodeStatusMsg);
 				return;
 			}
