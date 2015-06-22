@@ -3,8 +3,14 @@ package cmu.team5.middleware;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 import org.json.simple.*;
+import org.json.simple.parser.ContainerFactory;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
@@ -43,6 +49,14 @@ public class Protocol {
 		JSONObject json = new JSONObject();
 		json.put("messageType", "unregister");
 		json.put("serial", serialStr);
+		String message = json.toString();
+		return message;
+	}
+	
+	public static String generateUnregisterNodeMsg(String NodeId) {
+		JSONObject json = new JSONObject();
+		json.put("messageType", "unregister");
+		json.put("nodeId", NodeId);
 		String message = json.toString();
 		return message;
 	}
@@ -99,6 +113,17 @@ public class Protocol {
 		return message;
 	}
 	
+	
+	public static String generateNodeInfoMsg(String NodeId)
+	{
+		JSONObject json = new JSONObject();
+		json.put("messageType", "nodeStatus");
+		json.put("nodeId", NodeId);
+		String message = json.toString();
+		return message;
+		
+	}
+	
 	public static String generateNodeStatusResultMsg(String nodeId, HashMap sensorInfo)
 	{
 		JSONObject json = new JSONObject();
@@ -107,6 +132,14 @@ public class Protocol {
 		
 		if (sensorInfo.size() > 0)
 			json.put("sensor", sensorInfo);
+		
+		String message = json.toString();
+		return message;
+	}
+
+	public static String generateRegisteredNodeMsg(){
+		JSONObject json = new JSONObject();
+		json.put("messageType", "nodeRegistered");
 		
 		String message = json.toString();
 		return message;
@@ -129,6 +162,51 @@ public class Protocol {
 			value = json.get("deviceType").toString();
 		return value;
 	}
+	
+	
+	 	  
+	
+	public static HashMap<String,String> getSensorInfo(String msg)
+	{
+	
+		 HashMap<String, String> SensorInfo = new HashMap<String, String>();
+		 
+		        
+		
+		ContainerFactory containerFactory = new ContainerFactory(){
+		    public LinkedList creatArrayContainer() {
+		      return new LinkedList();
+		    }
+
+		    public Map createObjectContainer() {
+		      return new LinkedHashMap();
+		    }
+		                        
+		  };
+		
+		
+		String value = null;
+		JSONObject json1 = (JSONObject)JSONValue.parse(msg);
+		if (json1.get("sensor") != null){
+			value = json1.get("sensor").toString();
+		
+			try{
+				JSONParser parser = new JSONParser();
+			    Map json = (Map)parser.parse(value, containerFactory);
+			    Iterator iter = json.entrySet().iterator();
+			    while(iter.hasNext()){
+			      Map.Entry entry = (Map.Entry)iter.next();
+			      SensorInfo.put((String)entry.getKey(), (String)entry.getValue());
+			    }                        
+			  }
+			  catch(ParseException pe){
+			    System.out.println(pe);
+			  }
+		
+		}
+		return SensorInfo;
+		
+	}
 
 	public static String getMessageType(String msg)
 	{
@@ -146,6 +224,21 @@ public class Protocol {
 		if (json.get("result") != null)
 			value = json.get("result").toString();
 		return value;
+	}
+	
+	public static String[] getNodeList(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("nodeList") != null){
+			value = json.get("nodeList").toString();
+			value = value.substring(1);
+			value = value.substring(0, value.length()-1);
+			
+			String[] NodeList = value.split(",");
+			return NodeList;
+		}
+		return null;
 	}
 	
 
