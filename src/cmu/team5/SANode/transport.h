@@ -28,8 +28,6 @@ public:
 	int		connectionHandler(void);
 	int 	sendMessage(WiFiClient socket,JsonObject&  sendMsg);
 	int 	handleMessage(WiFiClient socket,char readData);
-	int 	IPToNetAddr (char * IPStr, uint8_t * NetAddr);	
-	int 	handleEvent(void);
 private:
 	char ssid[20];
 	int status;
@@ -47,7 +45,6 @@ private:
 	char bufJsonData[LENGTH_OF_JSON_STRING]; 
 	protocolMgr protocolManager;
 	IPAddress	serverIP;
-	char		preSensoInfo[4][10];
 };
 #endif
 //

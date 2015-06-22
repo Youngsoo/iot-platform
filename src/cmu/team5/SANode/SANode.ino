@@ -50,22 +50,20 @@
   // Initialize a serial terminal for debug messages.
   Serial.begin(9600);
   IPAddress server(192,168,1,149); 
-  String tmpingServerIP;
-	
   //IPAddress server(192,168,1,117);
   TransPortManager.initailize(WIFI_SSID,server,SERVER_PORTID,FIND_PORTID);
- // EEPROM.write(1, true);
- 
-
 }
 
 
 
 void loop() 
 {
-	Serial.println("----------------------------------");
-	TransPortManager.connectionHandler();
-	delay(500);
-	Serial.println("+++++++++++++++++++++++++++++++++++");
+  // Here we attempt connect to the server on the port specified above
+  //Serial.print("\nAttempting to connect to server...");
+  // if the server's disconnected, stop the client:
+  Serial.println("----------------------------------");
+  TransPortManager.connectionHandler();
+  delay(500);
+  Serial.println("+++++++++++++++++++++++++++++++++++");
 } //  LOOP
 
