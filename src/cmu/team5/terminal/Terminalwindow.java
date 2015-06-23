@@ -34,7 +34,7 @@ public class Terminalwindow extends JPanel {
 	public static Socket ClientSocket = null; 
 	private boolean UserLoggedIn = false;
 	
-	private String[] RegNodeList = null;
+	private static String[] RegNodeList = null;
 	
 	
 	private NodeControlUi NodeControler = null;
@@ -81,18 +81,25 @@ public class Terminalwindow extends JPanel {
 	
 	public static void ServerConfigUpdateReq(String light, String alarm, String log)
 	{
-		if (true){
 		try {
 			InputStream in = ClientSocket.getInputStream();
 			BufferedWriter out;
 			out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
-	//		String msg = Protocol.generateNodeInfoMsg(NodeId);	
-		//	Transport.sendMessage(out, msg);		
+			
+			String msg = Protocol.generateConfigDataMsg(RegNodeList[0],"light",light);	
+			Transport.sendMessage(out, msg);		
+			
+			msg = Protocol.generateConfigDataMsg(RegNodeList[0],"alarm",light);	
+			Transport.sendMessage(out, msg);		
+			
+			msg = Protocol.generateConfigDataMsg(RegNodeList[0],"log",light);	
+			Transport.sendMessage(out, msg);		
+			
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	 }
 	}
 	
 	public void GetNodeInformation(String NodeId){
@@ -154,6 +161,8 @@ public class Terminalwindow extends JPanel {
         frame.pack();
         frame.setVisible(true);
 	}
+	
+	
 	
 	private void RequstLogsFromServer(){
 		if (IsuserloggedIn()){

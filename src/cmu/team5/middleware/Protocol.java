@@ -196,6 +196,19 @@ public class Protocol {
 		String message = json.toString();
 		return message;
 	}
+	
+	
+	public static String generateConfigDataMsg(String NodeId, String Type, String Value)
+	{
+		JSONObject json = new JSONObject();
+		json.put("messageType", "configurableTime");
+		json.put("nodeId", NodeId);
+		json.put("configurableType", Type);
+		json.put("time", Value);
+		json.put("unit", "sec");
+		String message = json.toString();
+		return message;
+	}
 
 	public static String getUserId(String msg)
 	{

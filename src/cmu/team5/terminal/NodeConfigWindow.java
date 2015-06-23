@@ -43,6 +43,7 @@ public class NodeConfigWindow extends JPanel {
 	private void UpdateOptPerform()
 	{
 	   Terminalwindow.ServerConfigUpdateReq(getLightConfig(), getAlarmConfig(), getLogConfig());	
+	   CancelOptPerform();
 	}
 	
 	private void SetInitValue(int lightVal, int alarmVal, int logVal)
