@@ -13,19 +13,23 @@ import cmu.team5.middleware.*;
 public class TerminalManager
 {
 	private HashMap<BufferedWriter, String> terminalList;
+	private HashMap<Integer, BufferedWriter> clientList;
 	private DataManagerIF dataMgr;
 	
 	public TerminalManager()
 	{
 		terminalList = new HashMap<BufferedWriter, String>();
+		clientList = new HashMap<Integer, BufferedWriter>();
 		dataMgr = new DataManagerDummy();
 	}
 	
-	private void addTerminal(String userId, OutputStream out)
+	private void addTerminal(String userId, OutputStream out, int clientNumber)
 	{
 		System.out.println("Adding a terminal device");
+		BufferedWriter bwout = new BufferedWriter(new OutputStreamWriter(out));
 		synchronized(terminalList) {
-			terminalList.put(new BufferedWriter(new OutputStreamWriter(out)), userId);
+			terminalList.put(bwout, userId);
+			clientList.put(clientNumber, bwout);
 		}
 	}
 	
@@ -41,10 +45,15 @@ public class TerminalManager
 		}
 	}
 	
-	public void removeTerminal(String userId)
+	public void removeTerminal(int clientNumber)
 	{
+		System.out.println("Remove terminal device. (clientNumber:" + clientNumber + ")");
+		BufferedWriter out = clientList.get(clientNumber);
 		synchronized(terminalList) {
-			terminalList.remove(userId);
+			terminalList.remove(out);
+		}
+		synchronized(clientList) {
+			clientList.remove(clientNumber);
 		}
 	}
 	
@@ -53,13 +62,13 @@ public class TerminalManager
 		sendAllTerminal(message);
 	}
 	
-	public void handleLogin(String userId, String passwd, OutputStream out) throws IOException
+	public void handleLogin(String userId, String passwd, OutputStream out, int clientNumber) throws IOException
 	{
 		if (dataMgr.isValidLogin(userId, passwd)) {
 			String message = Protocol.generateLoginResultMsg(userId, true, null);
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
 			Transport.sendMessage(bw, message);
-			addTerminal(userId, out);
+			addTerminal(userId, out, clientNumber);
 		} else {
 			String reason = dataMgr.getLoginErrMsg(userId, passwd);
 			String message = Protocol.generateLoginResultMsg(userId, false, reason);

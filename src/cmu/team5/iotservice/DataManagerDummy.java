@@ -34,7 +34,7 @@ public class DataManagerDummy implements DataManagerIF
 		nodeInfoList.put("a2de", nodeInfo);
 	}
 	
-	public Boolean saveSensorLog(String nodeId, String sensorType, String value)
+	public boolean saveSensorLog(String nodeId, String sensorType, String value)
 	{
 		System.out.println("[LOG] nodeId:" + nodeId + ", sensorType:" + sensorType + ", value:" + value);
 		
@@ -51,19 +51,37 @@ public class DataManagerDummy implements DataManagerIF
 		return true;
 	}
 	
-	public Boolean saveActuatorLog(String nodeId, String actuatorType, String value)
+	public boolean saveActuatorLog(String nodeId, String actuatorType, String value)
 	{
 		System.out.println("[LOG] nodeId:" + nodeId + ", actuatorType:" + actuatorType + ", value:" + value);
 		
 		if (nodeInfoList.containsKey(nodeId)) {
 			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
-			nodeInfo.sensorInfo.put(actuatorType, value);
+			nodeInfo.actuatorInfo.put(actuatorType, value);
 		}
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String time = dateFormat.format(new Date());
 		System.out.println("time :" + time);
 		LogData logData = new LogData(nodeId, "actuator", time, actuatorType, value);
+		logList.add(logData);
+		
+		return true;
+	}
+	
+	public boolean saveCommandLog(String nodeId, String actuatorType, String value)
+	{
+		System.out.println("[LOG] nodeId:" + nodeId + ", actuatorType:" + actuatorType + ", value:" + value);
+		
+		if (nodeInfoList.containsKey(nodeId)) {
+			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
+			nodeInfo.actuatorInfo.put(actuatorType, value);
+		}
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String time = dateFormat.format(new Date());
+		System.out.println("time :" + time);
+		LogData logData = new LogData(nodeId, "command", time, actuatorType, value);
 		logList.add(logData);
 		
 		return true;
@@ -90,7 +108,7 @@ public class DataManagerDummy implements DataManagerIF
 		if (!nodeInfoList.containsKey(nodeId)) {
 			NodeInfo nodeInfo = new NodeInfo();
 			nodeInfo.nodeType = nodeName;
-			if (nodeName == "homesecurity") {
+			if (nodeName.equals("homesecurity")) {
 				nodeInfo.actuatorInfo.put("light", "off");
 				nodeInfo.actuatorInfo.put("alarm", "off");
 				nodeInfo.actuatorInfo.put("door", "close");
