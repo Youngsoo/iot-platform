@@ -46,7 +46,7 @@ class SearchNode
 		   	System.out.println( "\n\nMy IP Address:: " + myIpAddr );
 
 		   	//mySubnetMask = GetSubnetMask();
-		   	mySubnetMask = "255.255.255.254";
+		   	mySubnetMask = "255.255.255.0";
 		   	System.out.println( "Subnet Mask:: " + mySubnetMask +"\n\n" );
 		   	
 		   	isNodeFixedIP = false;

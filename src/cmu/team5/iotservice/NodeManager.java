@@ -12,19 +12,21 @@ import cmu.team5.middleware.Transport;
 public class NodeManager
 {
 	private HashMap<String, BufferedWriter> nodeList;
+	private HashMap<Integer, String> clientList;
 	private DataManagerIF dataMgr;
 	private SearchNode searchNode;
 	
 	public NodeManager()
 	{
 		nodeList = new HashMap<String, BufferedWriter>();
+		clientList = new HashMap<Integer, String>();
 		dataMgr = new DataManagerDummy();
 		searchNode = new SearchNode();
 	}
 	
 	private boolean sendNode(String nodeId, String message) throws IOException
 	{
-			boolean ret = false;
+		boolean ret = false;
 		/*
 		Iterator it = nodeList.entrySet().iterator();
 		while(it.hasNext()) {
@@ -52,28 +54,41 @@ public class NodeManager
 		return ret;
 	}
 	
-	public void addNode(String nodeId, OutputStream out)
+	public void addNode(String nodeId, OutputStream out, int clientNumber)
 	{
 		System.out.println("Adding a node device");
 		synchronized(nodeList) {
 			nodeList.put(nodeId, new BufferedWriter(new OutputStreamWriter(out)));
+		}
+		synchronized(clientList) {
+			clientList.put(clientNumber, nodeId);
 		}
 	}
 	
 	public void removeNode(String nodeId)
 	{
 		System.out.println("Remove node device");
+		/*
 		synchronized(nodeList) {
-			/*
-			BufferedWriter writer = nodeList.get(nodeId);
-			try {
-				if (writer != null) writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			*/
 			nodeList.remove(nodeId);
-			dataMgr.removeRegisteredNode(nodeId);
+		}
+		*/
+		BufferedWriter out = nodeList.get(nodeId);
+		try {
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		dataMgr.removeRegisteredNode(nodeId);
+	}
+	
+	public void removeNode(int clientNumber)
+	{
+		System.out.println("Remove node device. (clientNumber:" + clientNumber + ")");
+		String nodeId = clientList.get(clientNumber);
+		synchronized(nodeList) {
+			nodeList.remove(nodeId);
+			clientList.remove(clientNumber);
 		}
 	}
 	
@@ -90,7 +105,12 @@ public class NodeManager
 	
 	public void sendCommandMsg(String nodeId, String message) throws IOException
 	{
-		sendNode(nodeId, message);
+		boolean result = sendNode(nodeId, message);
+		if (result) {
+			String actuatorType = Protocol.getActuatorType(message);
+			String value = Protocol.getValue(message);
+			dataMgr.saveCommandLog(nodeId, actuatorType, value);
+		}
 	}
 	
 	public void handleSensorMsg(String nodeId, String sensorType, String sensorValue)

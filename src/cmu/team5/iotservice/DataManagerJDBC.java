@@ -44,7 +44,7 @@ public class DataManagerJDBC implements DataManagerIF
 			System.out.println("Creating database...");
 			stmt = conn.createStatement();
 			
-			String sql = "CREATE DATABASE STUDENTS";
+			String sql = "CREATE DATABASE IOTPLATFORM";
 			stmt.executeUpdate(sql);
 			System.out.println("Database created successfully...");
 			
@@ -65,7 +65,7 @@ public class DataManagerJDBC implements DataManagerIF
 
 	}
 	
-	public Boolean saveSensorLog(String nodeId, String sensorType, String value)
+	public boolean saveSensorLog(String nodeId, String sensorType, String value)
 	{
 		System.out.println("[LOG] nodeId:" + nodeId + ", sensorType:" + sensorType + ", value:" + value);
 		
@@ -142,6 +142,14 @@ public class DataManagerJDBC implements DataManagerIF
 
 	public void addRegisteredNode(String nodeId, String nodeName) {
 		
+	}
+
+	public boolean saveActuatorLog(String nodeId, String actuatorType, String value) {
+		return false;
+	}
+
+	public boolean saveCommandLog(String nodeId, String actuatorType, String value) {
+		return false;
 	}
 
 }

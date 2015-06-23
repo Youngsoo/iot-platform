@@ -419,5 +419,23 @@ public class Protocol {
 			value = json.get("passwd").toString();
 		return value;
 	}
+	
+	public static String getActuatorType(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("actuatorType") != null)
+			value = json.get("actuatorType").toString();
+		return value;
+	}
+	
+	public static String getValue(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("value") != null)
+			value = json.get("value").toString();
+		return value;
+	}
 
 }

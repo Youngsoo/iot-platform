@@ -59,6 +59,12 @@ public class Broker {
 
 	private void handleMessage(IoTMessage iotMsg) throws IOException
 	{
+		if (iotMsg.isClosed())  {
+			terminalMgr.removeTerminal(iotMsg.getClientNumber());
+			nodeMgr.removeNode(iotMsg.getClientNumber());
+			return;
+		}
+			
 		String message = iotMsg.getMessage();
 		OutputStream out = iotMsg.getStream();
 		
@@ -67,7 +73,7 @@ public class Broker {
 		String deviceTypeStr = Protocol.getDeviceType(message);
 		if (deviceTypeStr != null) {
 			// NOTE: "deviceType" only appears at the first message
-			handleDeviceInitMsg(message, out);
+			handleDeviceInitMsg(message, out, iotMsg.getClientNumber());
 			return;
 		}
 
@@ -126,11 +132,15 @@ public class Broker {
 				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), logDataMsg);
 				return;
 			}
+			
+			if (messageType.equals("configurableTime")) {
+				
+			}
 
 		}
 	}
 	
-	private void handleDeviceInitMsg(String message, OutputStream out) throws IOException
+	private void handleDeviceInitMsg(String message, OutputStream out, int clientNumber) throws IOException
 	{
 		String deviceTypeStr = Protocol.getDeviceType(message);
 		String deviceKey = Protocol.getNodeId(message);
@@ -138,7 +148,7 @@ public class Broker {
 		if (deviceTypeStr.equals("node")) {
 			//if (deviceKey != null && nodeMgr.isRegisteredNode(deviceKey)) {
 			if (deviceKey != null) {
-				nodeMgr.addNode(deviceKey, out);
+				nodeMgr.addNode(deviceKey, out, clientNumber);
 				return;
 			}
 			
@@ -150,7 +160,7 @@ public class Broker {
 		if (deviceTypeStr.equals("terminal")) {
 			String messageType = Protocol.getMessageType(message);
 			if (messageType != null && messageType.equals("login")) {
-				terminalMgr.handleLogin(Protocol.getUserId(message), Protocol.getPasswd(message), out);
+				terminalMgr.handleLogin(Protocol.getUserId(message), Protocol.getPasswd(message), out, clientNumber);
 				return;
 			}
 		} // terminal
