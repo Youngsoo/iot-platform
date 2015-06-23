@@ -140,4 +140,8 @@ public class DataManagerJDBC implements DataManagerIF
 		return null;
 	}
 
+	public void addRegisteredNode(String nodeId, String nodeName) {
+		
+	}
+
 }

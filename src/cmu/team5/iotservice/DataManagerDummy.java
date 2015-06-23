@@ -12,6 +12,7 @@ import cmu.team5.middleware.*;
 public class DataManagerDummy implements DataManagerIF
 {
 	private class NodeInfo {
+		String nodeType;
 		HashMap<String, String> sensorInfo = new HashMap();
 		HashMap<String, String> actuatorInfo = new HashMap();
 	}
@@ -44,7 +45,6 @@ public class DataManagerDummy implements DataManagerIF
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String time = dateFormat.format(new Date());
-		System.out.println("time :" + time);
 		LogData logData = new LogData(nodeId, "sensor", time, sensorType, value);
 		logList.add(logData);
 		
@@ -85,10 +85,16 @@ public class DataManagerDummy implements DataManagerIF
 		return reason;
 	}
 	
-	public void addRegisteredNode(String nodeId)
+	public void addRegisteredNode(String nodeId, String nodeName)
 	{
 		if (!nodeInfoList.containsKey(nodeId)) {
 			NodeInfo nodeInfo = new NodeInfo();
+			nodeInfo.nodeType = nodeName;
+			if (nodeName == "homesecurity") {
+				nodeInfo.actuatorInfo.put("light", "off");
+				nodeInfo.actuatorInfo.put("alarm", "off");
+				nodeInfo.actuatorInfo.put("door", "close");
+			}
 			nodeInfoList.put(nodeId, nodeInfo);
 		}
 	}

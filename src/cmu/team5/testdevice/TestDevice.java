@@ -91,6 +91,9 @@ class TestDevice
 			} else if (command.equals("logData")) {
 				message = "{\"messageType\":\"logData\"}";
 				
+			} else if (command.equals("information")) {
+				message = "{\"messageType\":\"information\",\"nodeId\":\"a2de\",\"contents\":\"Alarm by door open or sudden occupation\"}";
+				
 			} else if (command.equals("protocol")) {
 				ArrayList nodeList = new ArrayList();
 				//nodeList.add("1234");

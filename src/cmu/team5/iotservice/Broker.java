@@ -43,13 +43,17 @@ public class Broker {
 		return message;
 	}
 	
-	public void startService() throws IOException
+	public void startService()
 	{
 		transport.startService();
-		
-		while(true) {
-			IoTMessage iotMsg = getQueue();
-			handleMessage(iotMsg);
+	
+		try {
+			while(true) {
+				IoTMessage iotMsg = getQueue();
+				handleMessage(iotMsg);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -132,7 +136,8 @@ public class Broker {
 		String deviceKey = Protocol.getNodeId(message);
 		
 		if (deviceTypeStr.equals("node")) {
-			if (deviceKey != null && nodeMgr.isRegisteredNode(deviceKey)) {
+			//if (deviceKey != null && nodeMgr.isRegisteredNode(deviceKey)) {
+			if (deviceKey != null) {
 				nodeMgr.addNode(deviceKey, out);
 				return;
 			}

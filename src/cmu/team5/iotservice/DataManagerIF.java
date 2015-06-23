@@ -11,7 +11,7 @@ public interface DataManagerIF
 	public boolean isValidLogin(String userId, String passwd);
 	public String getLoginErrMsg(String userId, String passwd);
 	public ArrayList<String> getRegisteredNode();
-	public void addRegisteredNode(String nodeId);
+	public void addRegisteredNode(String nodeId, String nodeName);
 	public HashMap<String, String> getNodeSensorInfo(String nodeId);
 	public HashMap<String, String> getNodeActuatorInfo(String nodeId);
 	public boolean isRegisteredNode(String nodeId);

@@ -37,8 +37,9 @@ public class Transport
 	
 	public static int getMessageLength(InputStream stream) throws IOException {
 		boolean isValidMsg = false;
-		byte[] readByte = new byte[4];
+		byte[] readByte = new byte[8];
 		char[] magicStr = new char[4];
+		char[] lengthStr = new char[8];
 		int readLen = 0;
 		int msgLen = 0;
 		
@@ -55,14 +56,14 @@ public class Transport
 		}
 
 		// read the message length
-		readLen = stream.read(readByte, 0, 4);
+		readLen = stream.read(readByte, 0, 8);
 		if (readLen < 0) return -1;
 		
 		for (int i = 0; i < readLen; i++) {
-			magicStr[i] = (char)readByte[i];
+			lengthStr[i] = (char)readByte[i];
 		}
-		
-		msgLen = Integer.parseInt(String.valueOf(magicStr));
+
+		msgLen = Integer.parseInt(String.valueOf(lengthStr));
 		//System.out.println("msgLen: " + msgLen);
 		return msgLen;
 	}
@@ -71,16 +72,16 @@ public class Transport
 	{
 		char[] magicString = MAGICSTRING.toCharArray();
 		char[] __msgLength;
-		char[] msgLength = "0000".toCharArray();
+		char[] msgLength = "00000000".toCharArray();
 		
 		__msgLength = String.valueOf(length).toCharArray();
 		
 		for(int i = 0; i < __msgLength.length; i++) {
-			msgLength[4 - __msgLength.length + i] = __msgLength[i];
+			msgLength[8 - __msgLength.length + i] = __msgLength[i];
 		}
 		
 		out.write(magicString);
-		out.write(msgLength, 0, 4);
+		out.write(msgLength, 0, 8);
 
 		//System.out.println("magicString: " + String.valueOf(magicString));
 		//System.out.println("msgLength: " + String.valueOf(msgLength));
@@ -90,18 +91,18 @@ public class Transport
 	{
 		char[] magicString = MAGICSTRING.toCharArray();
 		char[] __msgLength;
-		char[] msgLength = "0000".toCharArray();
+		char[] msgLength = "00000000".toCharArray();
 		
 		if (message == null) return;
 		
 		__msgLength = String.valueOf(message.length()).toCharArray();
 		
 		for(int i = 0; i < __msgLength.length; i++) {
-			msgLength[4 - __msgLength.length + i] = __msgLength[i];
+			msgLength[8 - __msgLength.length + i] = __msgLength[i];
 		}
 		
 		out.write(magicString);
-		out.write(msgLength, 0, 4);
+		out.write(msgLength, 0, 8);
 		out.write(message, 0, message.length());
 		out.flush();
 
@@ -112,8 +113,9 @@ public class Transport
 	
 	public static String getMessage(InputStream in) throws IOException
 	{
-		byte[] buffer = new byte[1024];
-    	int readBytes, leftBytes, totalBytes, msgLength;
+		final int MAXREADBUF = 1024*1024;
+		byte[] buffer = new byte[MAXREADBUF];
+    	int readBytes, leftBytes, totalBytes, msgLength, readLength;
     	
 		msgLength = Transport.getMessageLength(in);
 		if (msgLength < 0) return null;
@@ -121,7 +123,8 @@ public class Transport
 		leftBytes = msgLength;
 		readBytes = 0;
 		totalBytes = 0;
-		while(leftBytes > 0) {
+
+		while(leftBytes > 0) {			
 			readBytes = in.read(buffer, totalBytes, leftBytes);
 			if (readBytes < 0) return null;
 			leftBytes -= readBytes;

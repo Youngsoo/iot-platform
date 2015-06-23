@@ -79,7 +79,7 @@ public class NodeManager
 	
 	public void registerNode(String nodeId, String nodeName)
 	{
-		dataMgr.addRegisteredNode(nodeId);
+		dataMgr.addRegisteredNode(nodeId, nodeName);
 		System.out.println("Register (" + nodeName + ":" + nodeId + ")");
 	}
 	

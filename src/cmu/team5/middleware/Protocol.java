@@ -162,8 +162,10 @@ public class Protocol {
 	
 	public static String generateLogDataMsg(ArrayList logList)
 	{
+		final int MAXLOGSIZE = 128;
 		JSONObject json = new JSONObject();
 		json.put("messageType", "logData");
+		int logCnt = 0;
 		
 		ArrayList array = new ArrayList();
 		for (Iterator<LogData> it = logList.iterator(); it.hasNext();) {
@@ -171,12 +173,14 @@ public class Protocol {
 			LogData logData = it.next();
 			
 			map.put("nodeId", logData.nodeId);
-			map.put("type", logData.type);
+			map.put("logType", logData.type);
 			map.put("time", logData.time);
 			map.put("name", logData.name);
 			map.put("value", logData.value);			
 			
 			array.add(map);
+			
+			if (++logCnt > MAXLOGSIZE) break;
 		}
 		
 		if (array.size() > 0)
