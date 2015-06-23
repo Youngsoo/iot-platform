@@ -206,6 +206,10 @@ public class Protocol {
 		return value;
 	}
 	
+	
+	
+	
+	
 	public static String getDeviceType(String msg)
 	{
 		String value = null;
@@ -217,13 +221,7 @@ public class Protocol {
 	
 	
 	public static List<HashMap<String,String>> getLogsData(String msg)
-	{
-		//String msg =   "{\"log\": [{\"nodeId\": \"a2de\", \"logType\": \"sensor\"},{\"nodeId\": \"fse\", \"logType\": \"Actor\"}]}";
-		
-		
-		List<HashMap<String,String>> Log = new ArrayList<HashMap<String, String>>();
-		
-		System.out.println(msg +  " *** ");
+	{	List<HashMap<String,String>> Log = new ArrayList<HashMap<String, String>>();	
 		String value = null;
 		JSONObject json1 = (JSONObject)JSONValue.parse(msg);
 		if (json1.get("log") != null){
@@ -340,6 +338,21 @@ public class Protocol {
 		}
 		return value;
 	}
+	
+	public static String getMsgEmergency(String msg){
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("messageType") != null){
+			value = json.get("messageType").toString();
+			if (value.equals("emergency")){
+				value = json.get("contents").toString();
+			}
+		}
+		return value;
+	}
+	
+	
+	
 	
 	public static String getResult(String msg)
 	{

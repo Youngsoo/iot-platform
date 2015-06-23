@@ -18,10 +18,6 @@ import java.util.Map;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-
-import org.json.simple.JSONValue;
-
 import cmu.team5.middleware.Protocol;
 import cmu.team5.middleware.Transport;
 
@@ -33,7 +29,7 @@ import com.jgoodies.forms.layout.*;
  */
 public class Terminalwindow extends JPanel {
 	
-	private static String ServerIp="localhost"; //"192.168.1.117";//"localhost";
+	private static String ServerIp="localhost"; //"192.168.1.149";//"localhost";
 	private static String ServerPort="550";
 	public static Socket ClientSocket = null; 
 	private boolean UserLoggedIn = false;
@@ -43,6 +39,11 @@ public class Terminalwindow extends JPanel {
 	
 	private NodeControlUi NodeControler = null;
 	
+	
+	JMenu NodeMenu;
+	JMenu LogMenu;
+	JMenu ConfigMenu;
+	JMenu LogOff;
 	
 	public Terminalwindow() {
 		initComponents();
@@ -76,6 +77,22 @@ public class Terminalwindow extends JPanel {
 	
 		ActuratorInfo = Protocol.getActuratorInfo(Msg);
 		UpdateActuratorTable(Protocol.getNodeId(Msg), ActuratorInfo);
+	}
+	
+	public static void ServerConfigUpdateReq(String light, String alarm, String log)
+	{
+		if (true){
+		try {
+			InputStream in = ClientSocket.getInputStream();
+			BufferedWriter out;
+			out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
+	//		String msg = Protocol.generateNodeInfoMsg(NodeId);	
+		//	Transport.sendMessage(out, msg);		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	 }
 	}
 	
 	public void GetNodeInformation(String NodeId){
@@ -127,6 +144,16 @@ public class Terminalwindow extends JPanel {
 	}
 	
 	
+	
+	private void NodeConfiguration(){
+		NodeConfigWindow configwin = new NodeConfigWindow();
+		JFrame frame = new JFrame();
+		frame.setSize(400,400);   
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.getContentPane().add(configwin);
+        frame.pack();
+        frame.setVisible(true);
+	}
 	
 	private void RequstLogsFromServer(){
 		if (IsuserloggedIn()){
@@ -225,11 +252,22 @@ public class Terminalwindow extends JPanel {
 		  JMenuBar menuBar = new JMenuBar();
 		  
 		  JMenu menu = new JMenu("Server Configuration");
-          JMenu nodemenu = new JMenu("Node Operation");
-		  JMenu logmenu = new JMenu("Log Infomation");
-          menuBar.add(menu);
-		  menuBar.add(nodemenu);
-		  menuBar.add(logmenu);
+          NodeMenu = new JMenu("Node Operation");
+		  LogMenu = new JMenu("Log Infomation");
+          ConfigMenu = new JMenu("Configuration");
+		  LogOff = new JMenu("LogOut");
+          
+		  menuBar.add(menu);
+		  menuBar.add(NodeMenu);
+		  menuBar.add(LogMenu);
+		  menuBar.add(ConfigMenu);
+		  menuBar.add(LogOff);
+		  
+		  NodeMenu.setEnabled(false);
+		  LogMenu.setEnabled(false);
+		  ConfigMenu.setEnabled(false);
+		  LogOff.setVisible(false);
+		  
 		  
 		  JMenuItem serverIp = new JMenuItem("Server IP");
 		  JMenuItem serverPort = new JMenuItem("Server Port");
@@ -239,11 +277,27 @@ public class Terminalwindow extends JPanel {
 		  JMenuItem NodeReg = new JMenuItem("Node Registration");
 		  JMenuItem NodeUreg = new JMenuItem("Node Un-Registration");
 		
-		  nodemenu.add(NodeReg);
-		  nodemenu.add(NodeUreg);
+		  NodeMenu.add(NodeReg);
+		  NodeMenu.add(NodeUreg);
 		  
 		  JMenuItem  LogDetails = new JMenuItem("Log Details");
-		  logmenu.add(LogDetails);
+		  LogMenu.add(LogDetails);
+		  
+		  JMenuItem  configDetails = new JMenuItem("Configuration");
+		  ConfigMenu.add(configDetails);
+		  
+		  
+		  LogOff.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent arg0) {
+	            	TerminalLogOut();
+	            }
+		  });
+
+		  configDetails.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent arg0) {
+	            	NodeConfiguration();
+	            }
+		  });
 		  
 		  
 		  LogDetails.addActionListener(new ActionListener() {
@@ -311,7 +365,31 @@ public class Terminalwindow extends JPanel {
 		  
 	  }
 	
-	
+	public void TerminalLogOut(){
+		  NodeMenu.setEnabled(false);
+		  LogMenu.setEnabled(false);
+		  ConfigMenu.setEnabled(false);
+		  LogOff.setVisible(false);
+		  CloseConnection();
+		  
+		  UserId.setText("");
+		  Password.setText("");
+		  Login.setEnabled(true);
+		  Refresh.setEnabled(false);
+		  ActNameList.setEnabled(false);
+		  Update.setEnabled(false);
+	}
+		
+	private void CloseConnection()
+	{
+		try {
+			ClientSocket.close();
+			UserLoggedIn = false;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	public static Socket Connection(){
 		Socket clientSocket = null;
 		try {
@@ -362,16 +440,24 @@ public class Terminalwindow extends JPanel {
 	}
 	
 	
+	public static void UpdateActNameList(String Name){
+		boolean exists = false;
+		 for (int index = 0; index < ActNameList.getItemCount() && !exists; index++) {
+		   if (Name.equals(ActNameList.getItemAt(index))) {
+		     exists = true;
+		   }
+		 }
+		 if (!exists) {
+			 ActNameList.addItem(Name);
+		 }
+	}
 	
 	private void UpdateActuratorTable(String NodeId, HashMap <String, String> ActratorInfo)
 	{
 		if (NodeControler == null){
-			NodeControl=null;
 			NodeControl = MakeActuratorTable();
-			NodeControl.updateUI();
 		}
 		NodeControler.UpdateSourceList(NodeId, ActratorInfo);
-		
 	}
   	
 	private void NodeUpdateRequest(String NodeId, String ActuratorName, String Value){
@@ -416,8 +502,9 @@ public class Terminalwindow extends JPanel {
 					}
 					break;
 				}
-				
-				NodeUpdateRequest(NodeId,ActName,OptValue);
+				if (ActName.equals(ActNameList.getSelectedItem())){
+					NodeUpdateRequest(NodeId,ActName,OptValue);
+				}
 		}
 		
 	}
@@ -438,6 +525,18 @@ public class Terminalwindow extends JPanel {
 		}
 	}
 	
+	private void EmergencyMsgDisplay(String Msg){
+		String data = Protocol.getMsgEmergency(Msg);
+		UIManager.put("OptionPane.okButtonText", "Ok");
+		JOptionPane.showMessageDialog(Terminal.Window, new JLabel(
+			    "<html><h2><font color='red'>" + data + "</font></h2></html>"));
+	}
+	
+	private void InformationMsgDisplay(String Msg){
+		String data = Protocol.getMsgInformation(Msg);
+		UIManager.put("OptionPane.okButtonText", "Ok");
+		JOptionPane.showMessageDialog(Terminal.Window, data);
+	}
 	
 	public void HandleServerResponse(String MsgType, String Msg){
 		
@@ -456,7 +555,12 @@ public class Terminalwindow extends JPanel {
 			ServerNodeUnRegistrationRes(Msg);
 			break;
 		case "emergency":
+			System.out.println(Msg);
+			EmergencyMsgDisplay(Msg);
+			break;
 		case "information":
+			System.out.println(Msg);
+			InformationMsgDisplay(Msg);
 			break;
 		case "nodeRegistered":
 			ServerNodeRegisteredRes(Msg);
@@ -476,14 +580,31 @@ public class Terminalwindow extends JPanel {
 			UserLoggedIn = true;
 			RequestRegsNodeList();
 		}
+		else if (Protocol.getResult(Msg).compareTo("fail") == 0){
+			UIManager.put("OptionPane.okButtonText", "Ok");
+			JOptionPane.showMessageDialog(Terminal.Window, "InValid Login !!!", "Login", JOptionPane.INFORMATION_MESSAGE);
+			UserLoggedIn = false;
+		}
 		
 		if ((ClientSocket !=null) && (UserLoggedIn == true)){
 			Login.setEnabled(false);
 			UserId.setEnabled(false);
 			Password.setEditable(false);
+			Refresh.setEnabled(true);
+			Update.setEnabled(true);
+			ActNameList.setEnabled(true);
+			NodeControl.setEnabled(true);
+			NodeMenu.setEnabled(true);
+			LogMenu.setEnabled(true);
+			ConfigMenu.setEnabled(true);
+			LogOff.setVisible(false);
 			System.out.println("SUCCESS..");
 		}	
+		
 	}
+	
+	
+	
 	
 	private void LoginActionPerformed(ActionEvent e) {
 		// TODO add your code here
@@ -518,20 +639,25 @@ public class Terminalwindow extends JPanel {
 		NodeInfo = MakeNodeInfo();
 		scrollPane2 = new JScrollPane();
 		NodeControl = MakeActuratorTable();
+		NodeControl.setEnabled(false);
 		Refresh = new JButton();
+		Refresh.setEnabled(false);
+		ActNameList = new JComboBox();
+		ActNameList.setEnabled(false);
 		Update = new JButton();
+		Update.setEnabled(false);
 
 		//======== this ========
 
 		// JFormDesigner evaluation mark
 		setBorder(new javax.swing.border.CompoundBorder(
 			new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-				"JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
+				"", javax.swing.border.TitledBorder.CENTER,
 				javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
 				java.awt.Color.red), getBorder())); addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
 
 		setLayout(new FormLayout(
-			"8*(default, $lcgap), default",
+			"9*(default, $lcgap), default",
 			"9*(default, $lgap), default"));
 
 		//---- label1 ----
@@ -565,21 +691,34 @@ public class Terminalwindow extends JPanel {
 		{
 			scrollPane1.setViewportView(NodeInfo);
 		}
-		add(scrollPane1, CC.xy(7, 15));
+		add(scrollPane1, CC.xywh(3, 15, 11, 1));
 
 		//======== scrollPane2 ========
 		{
 			scrollPane2.setViewportView(NodeControl);
 		}
-		add(scrollPane2, CC.xy(13, 15));
+		add(scrollPane2, CC.xywh(15, 15, 5, 1));
 
 		//---- Refresh ----
 		Refresh.setText("Refresh");
-		add(Refresh, CC.xy(7, 17));
+		add(Refresh, CC.xy(11, 17));
+		add(ActNameList, CC.xy(15, 17));
+		Refresh.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				RefreshActionPerformed(e);
+			}
+		});
 
 		//---- Update ----
 		Update.setText("Update");
-		add(Update, CC.xy(13, 17));
+		add(Update, CC.xy(17, 17));
+		Update.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				UpdateActionPerformed(e);
+			}
+		});
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
@@ -596,6 +735,7 @@ public class Terminalwindow extends JPanel {
 	private JScrollPane scrollPane2;
 	private JTable NodeControl;
 	private JButton Refresh;
+	private static JComboBox ActNameList;
 	private JButton Update;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

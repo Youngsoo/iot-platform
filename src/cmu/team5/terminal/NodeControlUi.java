@@ -136,7 +136,7 @@ public void UpdateSourceList(String NodeId, HashMap<String, String> data){
 	  		    source.setSupplier(NodeId);
 	  		  }
 	    	  tempSourceList.add(source);
-	    	  
+	    	  Terminalwindow.UpdateActNameList(ActName);
 	     	 break;
 	     	//light/alarm Act (on/off)	 
 	      case "light":
@@ -154,6 +154,7 @@ public void UpdateSourceList(String NodeId, HashMap<String, String> data){
 	  		    source.setSupplier(NodeId);
 	  		  }
 	     	 tempSourceList.add(source);
+	    	 Terminalwindow.UpdateActNameList(ActName);
 	     	 break; 	 
 	      default:
 	    	break;  
@@ -167,12 +168,9 @@ public void UpdateSourceList(String NodeId, HashMap<String, String> data){
 private List<SourceModel> getSourceDOList() {
    List<SourceModel> tempSourceList = new ArrayList<SourceModel>();
    
-      for (int index = 0; index < 3; index++) {
-
-  //Set Default Value for Door
-   SourceModel source = new SourceModel();
-   
-    source.setSelect(true);
+  for (int index = 0; index < 3; index++) {
+   SourceModel source = new SourceModel();  
+    source.setSelect(false);
     source.setInActive(false);
     source.setFactory("");
     source.setSupplier("");

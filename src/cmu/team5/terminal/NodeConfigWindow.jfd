@@ -1,0 +1,83 @@
+JFDML JFormDesigner: "5.2.1.0.138" Java: "1.8.0_45" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+			"$columnSpecs": "default, labelcompgap, default, labelcompgap, default, labelcompgap, 8dlu, labelcompgap, default, labelcompgap, 34dlu"
+			"$rowSpecs": "default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default"
+		} ) {
+			name: "this"
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "configLevel"
+				"text": "Node Configuration:"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 3
+				"gridWidth": 9
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "lightconfig"
+				"text": "Light Auto-Switch Off Duration (in Sec) :"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 3
+				"gridY": 5
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "lightText"
+				"columns": 10
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 8
+				"gridY": 5
+				"gridWidth": 4
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "alarmconfig"
+				"text": "Alarm Auto-Switch Off Duration (in Sec):"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 3
+				"gridY": 9
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "alarmText"
+				"columns": 10
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 8
+				"gridY": 9
+				"gridWidth": 4
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "logconfig"
+				"text": "Log History Capture Duration :"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 3
+				"gridY": 13
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "logText"
+				"columns": 10
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 8
+				"gridY": 13
+				"gridWidth": 4
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "update"
+				"text": "Update"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 3
+				"gridY": 23
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "Cancel"
+				"text": "Cancel"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 5
+				"gridY": 23
+				"gridWidth": 7
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 15, 0 )
+			"size": new java.awt.Dimension( 475, 310 )
+		} )
+	}
+}
