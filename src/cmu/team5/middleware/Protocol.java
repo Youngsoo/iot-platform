@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.json.simple.*;
@@ -27,8 +28,8 @@ public class Protocol {
 		JSONObject json = new JSONObject();
 		json.put("messageType", "command");
 		json.put("nodeId", nodeId);
-		json.put("sensorType", sensorType);
-		json.put("value", Integer.parseInt(sensorValue));
+		json.put("actuatorType", sensorType);
+		json.put("value", sensorValue);
 		String message = json.toString();
 		return message;
 	}
@@ -151,6 +152,13 @@ public class Protocol {
 		String message = json.toString();
 		return message;
 	}
+	
+	public static String generateLogInfoMsg(){
+		JSONObject json = new JSONObject();
+		json.put("messageType", "logData");
+		String message = json.toString();
+		return message;
+	}
 
 	public static String generateRegisteredNodeMsg(){
 		JSONObject json = new JSONObject();
@@ -206,6 +214,36 @@ public class Protocol {
 			value = json.get("deviceType").toString();
 		return value;
 	}	
+	
+	
+	public static List<HashMap<String,String>> getLogsData(String msg)
+	{
+		//String msg =   "{\"log\": [{\"nodeId\": \"a2de\", \"logType\": \"sensor\"},{\"nodeId\": \"fse\", \"logType\": \"Actor\"}]}";
+		
+		
+		List<HashMap<String,String>> Log = new ArrayList<HashMap<String, String>>();
+		
+		System.out.println(msg +  " *** ");
+		String value = null;
+		JSONObject json1 = (JSONObject)JSONValue.parse(msg);
+		if (json1.get("log") != null){
+			value = json1.get("log").toString();
+			JSONArray DataArray = (JSONArray) json1.get("log");
+			Iterator<JSONObject> iterator = DataArray.iterator();
+			while (iterator.hasNext()) {
+				HashMap<String, String> LogInfo = new HashMap<String, String>();
+				JSONObject json2 = (JSONObject) iterator.next();
+				System.out.println(json2.get("nodeId") + " " + json2.get("logType"));
+				if (json2.get("nodeId") != null) LogInfo.put("nodeId", json2.get("nodeId").toString());
+				if (json2.get("logType") != null) LogInfo.put("logType", json2.get("logType").toString());
+				if (json2.get("time") != null) LogInfo.put("time", json2.get("time").toString());
+				if (json2.get("name") != null) LogInfo.put("name", json2.get("name").toString());
+				if (json2.get("value") != null) LogInfo.put("value", json2.get("value").toString());
+				Log.add(LogInfo);
+			}
+		}	
+		return Log;
+	}
 
 	public static HashMap<String,String> getActuratorInfo(String msg)
 	{
@@ -226,7 +264,7 @@ public class Protocol {
 		JSONObject json1 = (JSONObject)JSONValue.parse(msg);
 		if (json1.get("actuator") != null){
 			value = json1.get("actuator").toString();
-		
+			System.out.println(value);
 			try{
 				JSONParser parser = new JSONParser();
 			    Map json = (Map)parser.parse(value, containerFactory);
@@ -287,6 +325,19 @@ public class Protocol {
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
 		if (json.get("messageType") != null)
 			value = json.get("messageType").toString();
+		return value;
+	}
+	
+	
+	public static String getMsgInformation(String msg){
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("messageType") != null){
+			value = json.get("messageType").toString();
+			if (value.equals("information")){
+				value = json.get("contents").toString();
+			}
+		}
 		return value;
 	}
 	

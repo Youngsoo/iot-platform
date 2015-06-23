@@ -11,7 +11,9 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.*;
@@ -31,12 +33,13 @@ import com.jgoodies.forms.layout.*;
  */
 public class Terminalwindow extends JPanel {
 	
-	private String ServerIp="192.168.1.117";//"localhost";
-	private String ServerPort="550";
-	private static Socket ClientSocket = null; 
+	private static String ServerIp="localhost"; //"192.168.1.117";//"localhost";
+	private static String ServerPort="550";
+	public static Socket ClientSocket = null; 
 	private boolean UserLoggedIn = false;
 	
-	private JTable NodeInfo;
+	private String[] RegNodeList = null;
+	
 	
 	private NodeControlUi NodeControler = null;
 	
@@ -53,42 +56,26 @@ public class Terminalwindow extends JPanel {
 			t.removeRow(0);	
 		}
 	}
-	
-	
-/*	private String[] GetNodeList(){
-    	String[] NodeList = null;
-    	String SelectedNodeId = null;
-    	if (IsuserloggedIn()){
-    	try{
-    		InputStream in = ClientSocket.getInputStream();
-    		BufferedWriter out;
-			
-    		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
-    		String msg = Protocol.generateRegisteredNodeMsg();		
-    		Transport.sendMessage(out, msg);
-    		String ret = Transport.getMessage(in);
-    		System.out.println(ret);
-    		NodeList = Protocol.getNodeList(ret);	
-    	}catch (Exception e){
-    		e.printStackTrace();
-    	}
-    	
-        
-    	if (NodeList != null && NodeList.length >= 1){
-
-    	}	
-		return NodeList;
-	}
-	*/
 	public void UpdateSensorTable(String NodeId, HashMap<String, String> SensorInfo){
 		
 		JTable table = getSensorTable();
 		DefaultTableModel t = (DefaultTableModel)table.getModel();
 		
 		for(Map.Entry<String, String> entry: SensorInfo.entrySet()) {
-		    System.out.println(entry.getKey() + " : " + entry.getValue());
 		     t.addRow(new Object[]{NodeId, entry.getKey(), entry.getValue()});	
 		}	
+	}
+	
+	private void ServerNodeStatusRes(String Msg)
+	{
+		HashMap<String, String> SensorInfo = new HashMap<String, String>();
+		HashMap<String, String> ActuratorInfo = new HashMap<String, String>();
+		
+		SensorInfo = Protocol.getSensorInfo(Msg);
+		UpdateSensorTable(Protocol.getNodeId(Msg), SensorInfo);
+	
+		ActuratorInfo = Protocol.getActuratorInfo(Msg);
+		UpdateActuratorTable(Protocol.getNodeId(Msg), ActuratorInfo);
 	}
 	
 	public void GetNodeInformation(String NodeId){
@@ -96,37 +83,153 @@ public class Terminalwindow extends JPanel {
 			InputStream in = ClientSocket.getInputStream();
 			BufferedWriter out;
 			out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
-			String msg = Protocol.generateNodeInfoMsg(NodeId);
-			Transport.sendMessage(out, msg);
-			String ret = Transport.getMessage(in);
-    		System.out.println("sensor info " + ret);		
-    		HashMap<String, String> SensorInfo = new HashMap<String, String>();
-    		SensorInfo = Protocol.getSensorInfo(ret);
-    		
-    		UpdateSensorTable(NodeId, SensorInfo);
-		
-    		HashMap<String, String> ActuratorInfo = new HashMap<String, String>();
-    		ActuratorInfo = Protocol.getActuratorInfo(ret);
-    		
-    		UpdateActuratorTable(NodeId, ActuratorInfo);
-    		
-		
-		
+			String msg = Protocol.generateNodeInfoMsg(NodeId);	
+			Transport.sendMessage(out, msg);		
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
+	private void ShowLogData(String Msg)
+	{
+		
+			Object[] cols = {
+			    "NodeId","logType","Time","Name", "Value"};
+			
+			DefaultTableModel model = new DefaultTableModel(); 
+			JTable table = new JTable(model);
+			for(int i =0; i < cols.length; i++){
+				model.addColumn(cols[i]); 
+			}
+			List<HashMap<String,String>> data = new ArrayList<HashMap<String,String>>(); 
+			data = Protocol.getLogsData(Msg);
+			 
+			 
+			for(int i =0; i <data.size(); i++) {
+				HashMap<String,String> logdata = new HashMap<String,String>();
+				logdata = data.get(i);
+				Object[] rowdata = new Object[5];
+						
+				for(Map.Entry<String, String> entry: logdata.entrySet()) {
+					switch(entry.getKey()){
+					case "nodeId": rowdata[0] = entry.getValue(); break;
+					case "logType": rowdata[1] = entry.getValue(); break;
+					case "time": rowdata[2] = entry.getValue(); break;	
+					case "name": rowdata[3] = entry.getValue(); break;
+					case "value": rowdata[4] = entry.getValue(); break;
+					}
+				}  		
+				model.addRow(rowdata);
+			}
+			
+			JOptionPane.showMessageDialog(null, new JScrollPane(table));		
+	}
 	
+	
+	
+	private void RequstLogsFromServer(){
+		if (IsuserloggedIn()){
+    		try {
+				BufferedWriter out;
+    			out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
+    			String msg = Protocol.generateLogInfoMsg();
+    			Transport.sendMessage(out, msg);
+    		}catch(Exception e){
+    			e.printStackTrace();
+    		}
+    	}
+	}
+	
+	
+	private void ServerNodeRegistrationRes(String Msg)
+	{
+  		if (Protocol.getResult(Msg).compareTo("success") == 0){
+  			UIManager.put("OptionPane.okButtonText", "Ok");
+			JOptionPane.showMessageDialog(Terminal.Window, "Node Registration Success..");
+			MakeEmptySensorTable();
+			RequestRegsNodeList();
+			GetNodeInformation(Protocol.getNodeId(Msg));
+		}
+		else{
+			UIManager.put("OptionPane.okButtonText", "Ok");
+			JOptionPane.showMessageDialog(Terminal.Window, "Node Registration Failed!!!");
+		}
+	}
+	
+	
+	private void ServerNodeUnRegistrationRes(String Msg)
+	{
+		if (Protocol.getResult(Msg).compareTo("success") == 0){
+			UIManager.put("OptionPane.okButtonText", "Ok");
+			JOptionPane.showMessageDialog(Terminal.Window, "Node Un-Registration Success..");
+			RequestRegsNodeList();
+		}	
+		RefreshActionPerformed(null);
+	}
+	
+	
+	private void DoNodeUnRegistration(String [] NodeList)
+	{
+		String SelectedNodeId = null;	
+		if (NodeList != null && NodeList.length >= 1){
+    		UIManager.put("OptionPane.cancelButtonText", "Cancel");
+    		UIManager.put("OptionPane.okButtonText", "UnRegister");
+    	
+    		SelectedNodeId = (String)JOptionPane.showInputDialog(
+    	                    Terminal.Window,
+    	                    "Registered Node Details..\n",
+    	                    "Node UnRegistration..",
+    	                    JOptionPane.PLAIN_MESSAGE,
+    	                    null,
+    	                    NodeList,
+    	                    NodeList[0]);
+    	}
+    	else{
+    		UIManager.put("OptionPane.okButtonText", "Ok");
+    		JOptionPane.showMessageDialog(Terminal.Window, "There is no Node present for Unregister");
+    	}
+		
+    	if ((SelectedNodeId != null) && (SelectedNodeId.length() > 0)) {
+        	
+    		try{
+        		BufferedWriter out;	
+        		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
+        		String msg = Protocol.generateUnregisterNodeMsg(SelectedNodeId);		
+        		Transport.sendMessage(out, msg);
+        	}catch (Exception e){}
+    	}
+	}
+	
+	private void ServerNodeRegisteredRes(String Msg)
+	{
+		RegNodeList = Protocol.getNodeList(Msg);	
+	}
+	
+	private void RequestRegsNodeList()
+	{
+		if (IsuserloggedIn()){
+        	try{
+        		BufferedWriter out;
+        		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
+        		String msg = Protocol.generateRegisteredNodeMsg();	
+        		Transport.sendMessage(out, msg);
+        	
+        	}catch (Exception e){
+        		e.printStackTrace();
+        	}
+		}
+	}
 	
 	public JMenuBar AddmenuBar(){
 		  JMenuBar menuBar = new JMenuBar();
 		  
 		  JMenu menu = new JMenu("Server Configuration");
           JMenu nodemenu = new JMenu("Node Operation");
-		  menuBar.add(menu);
+		  JMenu logmenu = new JMenu("Log Infomation");
+          menuBar.add(menu);
 		  menuBar.add(nodemenu);
+		  menuBar.add(logmenu);
 		  
 		  JMenuItem serverIp = new JMenuItem("Server IP");
 		  JMenuItem serverPort = new JMenuItem("Server Port");
@@ -139,6 +242,16 @@ public class Terminalwindow extends JPanel {
 		  nodemenu.add(NodeReg);
 		  nodemenu.add(NodeUreg);
 		  
+		  JMenuItem  LogDetails = new JMenuItem("Log Details");
+		  logmenu.add(LogDetails);
+		  
+		  
+		  LogDetails.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent arg0) {
+	            	RequstLogsFromServer();
+	            }
+		  });
+		  
 		  
 		  NodeReg.addActionListener(new ActionListener() {
 	            public void actionPerformed(ActionEvent arg0) {
@@ -147,29 +260,14 @@ public class Terminalwindow extends JPanel {
 	            		UIManager.put("OptionPane.okButtonText", "Register");
 	            		NodeId = JOptionPane.showInputDialog("Enter Node ID(Serial No):");
 	            		try {
-							InputStream in = ClientSocket.getInputStream();
 							BufferedWriter out;
 		        			out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
-		        			String msg = Protocol.generateRegisterMsg(null,NodeId);
-		        			Transport.sendMessage(out, msg);
-		        			String ret = Transport.getMessage(in);
-		            		System.out.println(ret);
-		            		if (Protocol.getResult(ret).compareTo("success") == 0){
-		            			JOptionPane.showMessageDialog(Terminal.Window, "Node Registration Success..");
-		            			//wait(1000);
-		            			MakeEmptySensorTable();
-		            			GetNodeInformation(NodeId);		
-		            		}
-		            		else{
-		            			UIManager.put("OptionPane.okButtonText", "Ok");
-		            			JOptionPane.showMessageDialog(Terminal.Window, "Node Registration Failed!!!");
-		            		}
-		     
+		        			String msg = Protocol.generateRegisterMsg(null,NodeId);            		
+		        			Transport.sendMessage(out, msg);	 
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-	        			
 	            	}
 	            	else{
 	            		UIManager.put("OptionPane.okButtonText", "Ok");
@@ -181,70 +279,14 @@ public class Terminalwindow extends JPanel {
 		  
 		  
 		  NodeUreg.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent arg0) {
-	            	
-	            	String[] NodeList = null;
-	            	String SelectedNodeId = null;
+	            public void actionPerformed(ActionEvent arg0) {	
 	            	if (IsuserloggedIn()){
-	            	try{
-	            		InputStream in = ClientSocket.getInputStream();
-	            		BufferedWriter out;
-	        			
-	            		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
-	            		String msg = Protocol.generateRegisteredNodeMsg();		
-	            		Transport.sendMessage(out, msg);
-	            		String ret = Transport.getMessage(in);
-	            		System.out.println(ret);
-	            		NodeList = Protocol.getNodeList(ret);	
-	            	}catch (Exception e){
-	            		e.printStackTrace();
+	            		DoNodeUnRegistration(RegNodeList);	       	
 	            	}
-	            	
-		            
-	            	if (NodeList != null && NodeList.length >= 1){
-	            		UIManager.put("OptionPane.cancelButtonText", "Cancel");
-	            		UIManager.put("OptionPane.okButtonText", "UnRegister");
-	            	
-	            		SelectedNodeId = (String)JOptionPane.showInputDialog(
-	            	                    Terminal.Window,
-	            	                    "Registered Node Details..\n",
-	            	                    "Node UnRegistration..",
-	            	                    JOptionPane.PLAIN_MESSAGE,
-	            	                    null,
-	            	                    NodeList,
-	            	                    NodeList[0]);
-	            	
-	            	}
-	            	else{
-	            		UIManager.put("OptionPane.okButtonText", "Ok");
-	            		JOptionPane.showMessageDialog(Terminal.Window, "There is no Node present for Unregister");
-	            	}
-	            	
-	            	
-	            	//If a string was returned, say so.
-	            	if ((SelectedNodeId != null) && (SelectedNodeId.length() > 0)) {
-	            	
-	            		try{
-		            		InputStream in = ClientSocket.getInputStream();
-		            		BufferedWriter out;
-		        			
-		            		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
-		            		String msg = Protocol.generateUnregisterNodeMsg(SelectedNodeId);		
-		            		Transport.sendMessage(out, msg);
-		            //		String ret = Transport.getMessage(in);
-		           // 		System.out.println(ret);
-		            		
-		            		RefreshActionPerformed(arg0);
-		            		
-		            	}catch (Exception e){}
-		            	
-	            	    return;
-	            	}  		
-	            }
-	            	else{
+	            else{
 	            		UIManager.put("OptionPane.okButtonText", "Ok");
 	            		JOptionPane.showMessageDialog(Terminal.Window, "Need to login First..");
-	            	}
+	            }
 	            }
 	           
 	            });
@@ -270,7 +312,7 @@ public class Terminalwindow extends JPanel {
 	  }
 	
 	
-	public Socket Connection(){
+	public static Socket Connection(){
 		Socket clientSocket = null;
 		try {
 			if (ServerIp != null && ServerPort != null ){
@@ -308,47 +350,26 @@ public class Terminalwindow extends JPanel {
 		return NodeInfo;
 	}
 	
-	
-	
 	public JTable MakeActuratorTable(){
 		 NodeControler = new NodeControlUi();
 	     JTable sourceTable = new JTable(NodeControler);
 	     return sourceTable;
 	}
 	
-	private void AddSensordata(){
-		
-	}
-
 
 	private boolean IsuserloggedIn(){
 		return UserLoggedIn;
 	}
 	
 	
-	private String[] GetNodeList(){
-		String[] NodeList = null;
-    	if (IsuserloggedIn()){
-    	try{
-    		InputStream in = ClientSocket.getInputStream();
-    		BufferedWriter out;
-			
-    		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
-    		String msg = Protocol.generateRegisteredNodeMsg();		
-    		Transport.sendMessage(out, msg);
-    		String ret = Transport.getMessage(in);
-    		System.out.println(ret);
-    		NodeList = Protocol.getNodeList(ret);	
-    	}catch (Exception e){
-    		e.printStackTrace();
-    	}
-      }
-    	return NodeList;		
-	}
 	
 	private void UpdateActuratorTable(String NodeId, HashMap <String, String> ActratorInfo)
 	{
-		
+		if (NodeControler == null){
+			NodeControl=null;
+			NodeControl = MakeActuratorTable();
+			NodeControl.updateUI();
+		}
 		NodeControler.UpdateSourceList(NodeId, ActratorInfo);
 		
 	}
@@ -356,14 +377,10 @@ public class Terminalwindow extends JPanel {
 	private void NodeUpdateRequest(String NodeId, String ActuratorName, String Value){
 		if (IsuserloggedIn()){
 	    	try{
-	    		InputStream in = ClientSocket.getInputStream();
 	    		BufferedWriter out;
-				
 	    		out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
 	    		String msg = Protocol.generateCommandMsg(NodeId, ActuratorName, Value);		
 	    		Transport.sendMessage(out, msg);
-	    //		String ret = Transport.getMessage(in);
-	    //		System.out.println(ret);
 	    	}catch (Exception e){
 	    		e.printStackTrace();
 	    	}
@@ -372,7 +389,7 @@ public class Terminalwindow extends JPanel {
 	
 	private void UpdateActionPerformed(ActionEvent e){
 		String OptValue= null;
-		String [] NodeList = GetNodeList();
+		String [] NodeList = RegNodeList;
 		
 		for (int i=0; i<NodeControler.getRowCount(); i++){
 				boolean Value = (boolean)NodeControler.getValueAt(i,0);
@@ -385,7 +402,7 @@ public class Terminalwindow extends JPanel {
 						OptValue = "close";
 					}
 					else{
-						OptValue = "opem";
+						OptValue = "open";
 					}
 					break;
 				case "light":
@@ -408,16 +425,71 @@ public class Terminalwindow extends JPanel {
 	
 	
 	private void RefreshActionPerformed(ActionEvent e){
-		String []NodeList = GetNodeList();
+		String []NodeList = RegNodeList;
 		MakeEmptySensorTable();
 		for (int i=0; i<NodeList.length; i++){
 			GetNodeInformation(NodeList[i]);		
 		}
+		
+		if (NodeControler == null){
+			NodeControl.removeAll();
+			NodeControl = MakeActuratorTable();
+			NodeControl.repaint();
+		}
+	}
+	
+	
+	public void HandleServerResponse(String MsgType, String Msg){
+		
+		switch(MsgType){
+		case "login":
+			ServerLogInResponse(Msg);
+			break;
+		case "sensor":
+			break;
+		case "command":
+			break;
+		case "register":
+			ServerNodeRegistrationRes(Msg);
+			break;
+		case "unregister":
+			ServerNodeUnRegistrationRes(Msg);
+			break;
+		case "emergency":
+		case "information":
+			break;
+		case "nodeRegistered":
+			ServerNodeRegisteredRes(Msg);
+			break;
+		case "nodeStatus":
+			ServerNodeStatusRes(Msg);
+			break;
+		case "logData":
+			ShowLogData(Msg);
+			break;	
+		}		
+	}
+	
+	
+	public void ServerLogInResponse(String Msg){
+		if (Protocol.getResult(Msg).compareTo("success") == 0){
+			UserLoggedIn = true;
+			RequestRegsNodeList();
+		}
+		
+		if ((ClientSocket !=null) && (UserLoggedIn == true)){
+			Login.setEnabled(false);
+			UserId.setEnabled(false);
+			Password.setEditable(false);
+			System.out.println("SUCCESS..");
+		}	
 	}
 	
 	private void LoginActionPerformed(ActionEvent e) {
 		// TODO add your code here
-		ClientSocket = Connection();
+		if (ClientSocket == null){
+			ClientSocket = Connection();
+		}
 		
 		try {
 			InputStream in = ClientSocket.getInputStream();
@@ -426,22 +498,11 @@ public class Terminalwindow extends JPanel {
 			out = new BufferedWriter(new OutputStreamWriter(ClientSocket.getOutputStream()));
 			String msg = Protocol.generateLoginMsg(UserId.getText(), Password.getText());
 			Transport.sendMessage(out, msg);
-			String ret = Transport.getMessage(in);
-			if (Protocol.getResult(ret).compareTo("success") == 0){
-				UserLoggedIn = true;
-			}			
-		} catch (IOException e1) {
+			} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			UserLoggedIn = false;
-		}
-		
-		if ((ClientSocket !=null) && (UserLoggedIn == true)){
-			Login.setEnabled(false);
-			UserId.setEnabled(false);
-			Password.setEditable(false);
-		}
-		
+		}			
 	}
 
 	private void initComponents() {
@@ -465,7 +526,7 @@ public class Terminalwindow extends JPanel {
 		// JFormDesigner evaluation mark
 		setBorder(new javax.swing.border.CompoundBorder(
 			new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-				"", javax.swing.border.TitledBorder.CENTER,
+				"JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
 				javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
 				java.awt.Color.red), getBorder())); addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
 
@@ -515,28 +576,10 @@ public class Terminalwindow extends JPanel {
 		//---- Refresh ----
 		Refresh.setText("Refresh");
 		add(Refresh, CC.xy(7, 17));
-		
-		Refresh.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				RefreshActionPerformed(e);
-			}
-		});
-		
-		
 
 		//---- Update ----
 		Update.setText("Update");
 		add(Update, CC.xy(13, 17));
-		
-		Update.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				UpdateActionPerformed(e);
-			}
-		});
-		
-		
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
@@ -549,7 +592,7 @@ public class Terminalwindow extends JPanel {
 	private JPasswordField Password;
 	private JButton Login;
 	private JScrollPane scrollPane1;
-	
+	private JTable NodeInfo;
 	private JScrollPane scrollPane2;
 	private JTable NodeControl;
 	private JButton Refresh;

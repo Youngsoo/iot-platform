@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -25,6 +26,7 @@ public class Terminal extends JFrame{
 	private static final int portNum = 550;
 	
 	public static JFrame Window;
+	public Terminalwindow t;
 	
 
 	public void MakeMsgHeader(){
@@ -42,7 +44,7 @@ public class Terminal extends JFrame{
 		  Window = new JFrame();
 	      Window.setSize(560,400);   
 	       //Create object for the Class you generated using JFromDesigner         
-	      Terminalwindow t = new Terminalwindow();
+	      t = new Terminalwindow();
 	      Window.setJMenuBar(t.AddmenuBar());
 	      Window.setDefaultCloseOperation(EXIT_ON_CLOSE);
 	      Window.setVisible(true);
@@ -50,12 +52,53 @@ public class Terminal extends JFrame{
 	      Window.add(t);
 	      
 	}
+	
+	
+	
+	public class SocketScanner implements Runnable {
+
+		InputStream in=null;	
+		
+		Socket ClientSocket = t.ClientSocket;
+
+		public void run() {
+			while (true) {
+	            String msg;
+	            String MsgType;
+	          try {
+					if (t.ClientSocket != null){
+						in = t.ClientSocket.getInputStream();
+						msg = Transport.getMessage(in);
+						System.out.println("***" + msg);
+						MsgType = Protocol.getMessageType(msg);
+						t.HandleServerResponse(MsgType, msg);			
+					}
+					else{
+						t.ClientSocket = t.Connection();
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	            
+	        }
+	    }
+	}
+
+	
+	private static void StartRecevingMessage(){
+//		Thread t1 = new Thread(new SocketScanner());
+	//    t1.start();
+	}
+	
 
 	public static void main(String[] args) throws Exception {
 			
-	    Terminal t = new Terminal();
+	    Terminal t1 = new Terminal();
+	    //t1.StartRecevingMessage();
+	    Thread t11 = new Thread(t1.new SocketScanner());
+	    t11.start();
 	    
-
 	    
 		System.out.println("Connected to the server");
 		
