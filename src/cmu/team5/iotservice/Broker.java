@@ -2,6 +2,8 @@ package cmu.team5.iotservice;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -17,7 +19,7 @@ public class Broker {
 	private TerminalManager terminalMgr;
 	private BlockingQueue<IoTMessage> msgQ;
 	private Transport transport;
-	
+
 	public Broker()
 	{
 		nodeMgr = new NodeManager();
@@ -43,191 +45,113 @@ public class Broker {
 	
 	public void startService() throws IOException
 	{
-		IoTMessage iotMsg = null;
-		String message = null;
-		DeviceType deviceType = DeviceType.UNKNOWN;
-		String deviceKey;
-
 		transport.startService();
 		
 		while(true) {
-			iotMsg = getQueue();
-			message = iotMsg.getMessage();
-			
-			System.out.println(">> " + message);
-			
-			String deviceTypeStr = Protocol.getDeviceType(message);
-			if (deviceTypeStr != null) {
-				OutputStream out = iotMsg.getStream();
-				
-				if (deviceTypeStr.equals("node")) {
+			IoTMessage iotMsg = getQueue();
+			handleMessage(iotMsg);
+		}
+	}
 
-					deviceType = DeviceType.NODE;
-					deviceKey = Protocol.getNodeId(message);
-					nodeMgr.addNode(deviceKey, out);
-				} else if (deviceTypeStr.equals("terminal")) {
-					deviceType = DeviceType.TERMINAL;
-					deviceKey = Protocol.getUserId(message);
-					terminalMgr.addTerminal(deviceKey, out);
-				} else {
-					System.out.println("Not a node or terminal device so close the connection");
-					out.close();
-					return;
-				}
-				
-				continue;
-			}
-			
-			String messageType = Protocol.getMessageType(message);
-			if (messageType != null && messageType.equals("sensor")) {
-				nodeMgr.handleNodeMsg(
+	private void handleMessage(IoTMessage iotMsg) throws IOException
+	{
+		String message = iotMsg.getMessage();
+		OutputStream out = iotMsg.getStream();
+		
+		//System.out.println("Received << " + message);
+		
+		String deviceTypeStr = Protocol.getDeviceType(message);
+		if (deviceTypeStr != null) {
+			// NOTE: "deviceType" only appears at the first message
+			handleDeviceInitMsg(message, out);
+			return;
+		}
+
+		String messageType = Protocol.getMessageType(message);
+		if (messageType != null) {
+			if (messageType.equals("sensor")) {
+				nodeMgr.handleSensorMsg(
 						Protocol.getNodeId(message),
 						Protocol.getSensorType(message),
 						Protocol.getSensorValue(message));
+				return;
 			}
-	
-			if (messageType != null && messageType.equals("command")) {
+			
+			if (messageType.equals("command")) {
 				nodeMgr.sendCommandMsg(Protocol.getNodeId(message), message);
+				return;
 			}
-		}
-		
-		/*
-		try {
-			startServer();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		*/
-	}
-
-	private void startServer() throws IOException
-	{
-		while(true)
-		{
-			ServerSocket listener = new ServerSocket(portNum);
-			int clientNumber = 0;
 			
-    		try
-    		{
-    			while(true) {
-    				System.out.println ("Waiting for connection on port " + portNum + "." );
-    				new MessageHandler(listener.accept(), clientNumber++).start();
-    			}		
-        	}
-    		catch (IOException e)
-        	{
-        		System.err.println("Could not instantiate socket on port: " + portNum + " " + e);
-        		System.exit(1);
-        	}
-    		
-			System.out.println (".........................\n" );
+			if (messageType.equals("register")) {
+				nodeMgr.handleRegisterRequest(Protocol.getSerial(message), out);
+				return;
+			}
+			
+			if (messageType.equals("unregister")) {
+				String nodeId = Protocol.getNodeId(message);
+				if (nodeMgr.isRegisteredNode(nodeId)) {
+					nodeMgr.handleUnregisterRequest(nodeId, new BufferedWriter(new OutputStreamWriter(out)));
+				}
+				return;
+			}
+			
+			if (messageType.equals("emergency") || messageType.equals("information")) {
+				terminalMgr.handleMessage(message);
+				return;
+			}
+			
+			if (messageType.equals("nodeRegistered")) {
+				ArrayList list = nodeMgr.getRegisteredNode();
+				String nodeRegMsg = Protocol.generateRegisteredNodeMsg(list);
+				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), nodeRegMsg);
+				return;
+			}
+			
+			if (messageType.equals("nodeStatus")) {
+				String nodeId = Protocol.getNodeId(message);
+				HashMap sensorInfo = nodeMgr.getNodeSensorInfo(nodeId);
+				HashMap actuatorInfo = nodeMgr.getNodeActuatorInfo(nodeId);
+				String nodeStatusMsg = Protocol.generateNodeStatusResultMsg(nodeId, sensorInfo, actuatorInfo); 
+				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), nodeStatusMsg);
+				return;
+			}
+			
+			if (messageType.equals("logData")) {
+				ArrayList logList = nodeMgr.getLogDataAll();
+				String logDataMsg = Protocol.generateLogDataMsg(logList);
+				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), logDataMsg);
+				return;
+			}
 
-    	}
+		}
 	}
 	
-	private class MessageHandler extends Thread {
-		private Socket socket;
-		private int clientNumber;
-		private DeviceType deviceType = DeviceType.UNKNOWN;
-		private String deviceKey;
+	private void handleDeviceInitMsg(String message, OutputStream out) throws IOException
+	{
+		String deviceTypeStr = Protocol.getDeviceType(message);
+		String deviceKey = Protocol.getNodeId(message);
 		
-		public MessageHandler(Socket socket, int clientNumber)
-		{
-			this.socket = socket;
-			this.clientNumber = clientNumber;
-			System.out.println("New connection with client# " + clientNumber + " at " + socket);
-		}
-				
-		public void run() {
-			String message;
-			byte[] buffer = new byte[1024];
-			int readBytes, leftBytes, totalBytes, msgLength;
-			
-			try {
-				InputStream in = socket.getInputStream();
-				OutputStream out = socket.getOutputStream();
-				
-				msgLength = Transport.getMessageLength(in);
-				if (msgLength < 0) return;
-				
-				leftBytes = msgLength;
-				readBytes = 0;
-				totalBytes = 0;
-				while(leftBytes > 0) {
-					readBytes = in.read(buffer, totalBytes, leftBytes);
-					System.out.println("readBytes: " + readBytes);
-					if (readBytes < 0) return;
-					leftBytes -= readBytes;
-					totalBytes += readBytes;
-				}
-				
-				message = new String(buffer, 0, msgLength);
-
-				System.out.println(">> " + message);
-				String deviceTypeStr = Protocol.getDeviceType(message);
-				if (deviceTypeStr != null && deviceTypeStr.equals("node")) {
-					deviceType = DeviceType.NODE;
-					deviceKey = Protocol.getNodeId(message);
-					nodeMgr.addNode(deviceKey, out);
-				} else if (deviceTypeStr != null && deviceTypeStr.equals("terminal")) {
-					deviceType = DeviceType.TERMINAL;
-					deviceKey = Protocol.getUserId(message);
-					terminalMgr.addTerminal(deviceKey, out);
-				} else {
-					System.out.println("Not a node or terminal device so close the connection");
-					socket.close();
-					return;
-				}
-
-				while (true) {
-
-					msgLength = Transport.getMessageLength(in);
-					if (msgLength < 0) return;
-					
-					leftBytes = msgLength;
-					readBytes = 0;
-					while(leftBytes > 0) {
-						readBytes = in.read(buffer, readBytes, leftBytes);
-						if (readBytes < 0) return;
-						leftBytes -= readBytes;
-					}
-
-					message = new String(buffer, 0, msgLength);
-					System.out.println(">> " + message);
-					//System.out.println(">> msgtype: " + Protocol.getMessageType(message));
-					//System.out.println(">> value: " + Protocol.getSensorValue(message));
-					
-					String messageType = Protocol.getMessageType(message);
-					if (messageType != null && messageType.equals("sensor")) {
-						nodeMgr.handleNodeMsg(
-								Protocol.getNodeId(message),
-								Protocol.getSensorType(message),
-								Protocol.getSensorValue(message));
-					}
-
-					if (messageType != null && messageType.equals("command")) {
-						nodeMgr.sendCommandMsg(Protocol.getNodeId(message), message);
-					}
-				}
-
-			} catch (IOException e) {
-				System.out.println("Error handling client# " + clientNumber + ": " + e);
-			} finally {
-				try {
-					socket.close();
-					
-					if (deviceType == DeviceType.NODE) {
-						nodeMgr.removeNode(deviceKey);
-					} else if (deviceType == DeviceType.TERMINAL) {
-						terminalMgr.removeTerminal(deviceKey);
-					}
-				} catch (IOException e) {
-					System.out.println("Couldn't close a socket, what's going on?");
-				}
-              System.out.println("Connection with client# " + clientNumber + " closed");
+		if (deviceTypeStr.equals("node")) {
+			if (deviceKey != null && nodeMgr.isRegisteredNode(deviceKey)) {
+				nodeMgr.addNode(deviceKey, out);
+				return;
 			}
-		}
+			
+			System.out.println("Not a registered node so close the connection");
+			out.close();
+			return;			
+		} // node
+		
+		if (deviceTypeStr.equals("terminal")) {
+			String messageType = Protocol.getMessageType(message);
+			if (messageType != null && messageType.equals("login")) {
+				terminalMgr.handleLogin(Protocol.getUserId(message), Protocol.getPasswd(message), out);
+				return;
+			}
+		} // terminal
+		
+		System.out.println("Not a node or terminal device so close the connection");
+		out.close();
 	}
-}
-
-
+	
+} // class Broker

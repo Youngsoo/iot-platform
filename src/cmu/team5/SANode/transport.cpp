@@ -46,7 +46,7 @@ void transportMgr::initailize(char * pSsid,IPAddress ipAddress,int pServerPort,i
 	serverSocket.begin();
 	printConnectionStatus();
 	protocolManager.initailize();
-	//serverIP=ipAddress;
+	serverIP=ipAddress;
 	curCount=0;
 	memset(bufJsonData,0,LENGTH_OF_JSON_STRING);
 }
@@ -102,8 +102,8 @@ int transportMgr::connectionHandler(void)
     client.stop();
     isConntected=false;
     Serial.println("try to connect");
-    //if (client.connect(serverIP, serverPort))
-    if(0)
+    if (client.connect(serverIP, serverPort))
+    //if(0)
     {
         isConntected=true;
         JsonObject& json = protocolManager.makeConnMsg();
@@ -112,7 +112,7 @@ int transportMgr::connectionHandler(void)
 		sendMessage(client,json);
     }    
   }
- isConntected=false;
+ 
  /*
 
  if(isConntected==true) 

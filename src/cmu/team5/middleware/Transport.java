@@ -85,4 +85,51 @@ public class Transport
 		//System.out.println("magicString: " + String.valueOf(magicString));
 		//System.out.println("msgLength: " + String.valueOf(msgLength));
 	}
+	
+	public static void sendMessage(BufferedWriter out, String message) throws IOException
+	{
+		char[] magicString = MAGICSTRING.toCharArray();
+		char[] __msgLength;
+		char[] msgLength = "0000".toCharArray();
+		
+		if (message == null) return;
+		
+		__msgLength = String.valueOf(message.length()).toCharArray();
+		
+		for(int i = 0; i < __msgLength.length; i++) {
+			msgLength[4 - __msgLength.length + i] = __msgLength[i];
+		}
+		
+		out.write(magicString);
+		out.write(msgLength, 0, 4);
+		out.write(message, 0, message.length());
+		out.flush();
+
+		//System.out.println("magicString: " + String.valueOf(magicString));
+		//System.out.println("msgLength: " + String.valueOf(msgLength));
+		System.out.println("Sending >> " + message);
+	}
+	
+	public static String getMessage(InputStream in) throws IOException
+	{
+		byte[] buffer = new byte[1024];
+    	int readBytes, leftBytes, totalBytes, msgLength;
+    	
+		msgLength = Transport.getMessageLength(in);
+		if (msgLength < 0) return null;
+		
+		leftBytes = msgLength;
+		readBytes = 0;
+		totalBytes = 0;
+		while(leftBytes > 0) {
+			readBytes = in.read(buffer, totalBytes, leftBytes);
+			if (readBytes < 0) return null;
+			leftBytes -= readBytes;
+			totalBytes += readBytes;
+		}
+		
+		String recvMsg = new String(buffer, 0, msgLength);
+		System.out.println("Received << " + recvMsg);
+		return recvMsg;
+	}
 }

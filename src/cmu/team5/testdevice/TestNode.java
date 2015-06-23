@@ -1,4 +1,4 @@
-package cmu.team5.testnode;
+package cmu.team5.testdevice;
 
 import java.io.*;
 import java.net.*;
@@ -10,8 +10,8 @@ class TestNode
 	public static void main(String argv[]) throws Exception
  	{
   		String inputLine;					// String from the server
-    	String[]clientMsg0 = {"{\n\"devicetype\":\"node\",\n\"nodeid\":\"1234\"}\n"};
-    	String[]clientMsg1 = {"{\"msgtype\":\"sensor\",\"nodeid\":\"1234\",\"sensortype\":\"door1\",\"value\":0}\n"};
+    	String[]clientMsg0 = {"{\n\"deviceType\":\"node\",\n\"nodeId\":\"1234\"}\n"};
+    	String[]clientMsg1 = {"{\"msgType\":\"sensor\",\"nodeId\":\"1234\",\"sensorType\":\"door1\",\"value\":0}\n"};
 
 		Socket clientSocket = null;		// The socket.
     	int msgNum = 0;					// Index into the clientMsg array.
