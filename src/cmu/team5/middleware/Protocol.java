@@ -380,6 +380,15 @@ public class Protocol {
 		return value;
 	}
 	
+	public static String getReason(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("reason") != null)
+			value = json.get("reason").toString();
+		return value;
+	}
+	
 	public static String[] getNodeList(String msg)
 	{
 		String value = null;

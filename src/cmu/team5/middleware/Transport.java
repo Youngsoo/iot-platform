@@ -132,6 +132,7 @@ public class Transport
 		}
 		
 		String recvMsg = new String(buffer, 0, msgLength);
+		//System.out.println("msgLength :" + msgLength);
 		System.out.println("Received << " + recvMsg);
 		return recvMsg;
 	}

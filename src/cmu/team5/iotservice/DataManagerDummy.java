@@ -35,6 +35,7 @@ public class DataManagerDummy implements DataManagerIF
 		nodeInfo.actuatorInfo.put("alarm", "off");
 		nodeInfo.actuatorInfo.put("door", "close");
 		nodeInfoList.put("a2de", nodeInfo);
+		//nodeInfoList.put("a35c", nodeInfo);
 	}
 	
 	public boolean saveSensorLog(String nodeId, String sensorType, String value)

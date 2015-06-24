@@ -74,11 +74,13 @@ public class NodeManager
 		}
 		*/
 		BufferedWriter out = nodeList.get(nodeId);
+		/*
 		try {
 			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		*/
 		dataMgr.removeRegisteredNode(nodeId);
 	}
 	
