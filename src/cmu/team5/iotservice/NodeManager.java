@@ -113,9 +113,19 @@ public class NodeManager
 		}
 	}
 	
+	public void sendConfigMsg(String nodeId, String message) throws IOException
+	{
+		sendNode(nodeId, message);
+	}
+	
 	public void handleSensorMsg(String nodeId, String sensorType, String sensorValue)
 	{
 		dataMgr.saveSensorLog(nodeId, sensorType, sensorValue);
+	}
+	
+	public void handleActuatorMsg(String nodeId, String actuatorType, String actuatorValue)
+	{
+		dataMgr.saveActuatorLog(nodeId, actuatorType, actuatorValue);
 	}
 	
 	public void handleRegisterRequest(String serialStr, OutputStream terminalOut)
@@ -155,5 +165,11 @@ public class NodeManager
 	public ArrayList getLogDataAll()
 	{
 		return dataMgr.getLogDataAll();
+	}
+	
+	public void setLogConfigTime(String time)
+	{
+		int logTime = Integer.parseInt(time);
+		dataMgr.setLogConfigTime(logTime);
 	}
 }
