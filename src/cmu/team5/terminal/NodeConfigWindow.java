@@ -16,8 +16,21 @@ import com.jgoodies.forms.layout.*;
  * @author swapan pati
  */
 public class NodeConfigWindow extends JPanel {
+	
+	static String lightVal="300" ;
+	String alarmVal="300";
+	String logVal="300";
+	
+	private void UpdateConfigVal()
+	{
+		lightVal = getLightConfig();
+		alarmVal=getAlarmConfig();
+		logVal=getLogConfig();
+	}
+	
 	public NodeConfigWindow() {
 		initComponents();
+		SetInitValue(lightVal,alarmVal,logVal);
 		
 		update.addActionListener(new ActionListener() {
 			@Override
@@ -44,13 +57,14 @@ public class NodeConfigWindow extends JPanel {
 	{
 	   Terminalwindow.ServerConfigUpdateReq(getLightConfig(), getAlarmConfig(), getLogConfig());	
 	   CancelOptPerform();
+	   UpdateConfigVal();
 	}
 	
-	private void SetInitValue(int lightVal, int alarmVal, int logVal)
+	private void SetInitValue(String lightVal, String alarmVal, String logVal)
 	{
-		lightText.setText(lightVal+"");
-		alarmText.setText(alarmVal+"");
-		logText.setText(logVal+"");
+		lightText.setText(lightVal);
+		alarmText.setText(alarmVal);
+		logText.setText(logVal);
 	}
 	
 	public void setLightConfig(String Value)

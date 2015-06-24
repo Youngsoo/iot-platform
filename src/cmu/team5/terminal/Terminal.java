@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 
+import javax.sound.sampled.LineUnavailableException;
 import javax.swing.JFrame;
 
 import cmu.team5.middleware.*;
@@ -57,6 +58,6 @@ public class Terminal extends JFrame{
 			
 	    Terminal terminal = new Terminal();
 	    Thread inService = new Thread(terminal.new SocketScanner());
-	    inService.start();	
+	    inService.start();			
 	}
 }

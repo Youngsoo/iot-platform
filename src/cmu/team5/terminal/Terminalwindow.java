@@ -1,7 +1,10 @@
 /*
  * Created by JFormDesigner on Thu Jun 18 01:52:03 IST 2015
  */
+//1653
 
+//
+//8352
 package cmu.team5.terminal;
 
 import java.awt.event.*;
@@ -16,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import cmu.team5.middleware.Protocol;
@@ -24,12 +28,13 @@ import cmu.team5.middleware.Transport;
 import com.jgoodies.forms.factories.*;
 import com.jgoodies.forms.layout.*;
 
+//a35c
 /**
  * @author swapan pati
  */
 public class Terminalwindow extends JPanel {
 	
-	private static String ServerIp="localhost"; //"192.168.1.149";//"localhost";
+	private static String ServerIp="lgteam5.pc.cc.cmu.edu";//"192.168.1.149";//"localhost"; //"lgteam5.pc.cc.cmu.edu"
 	private static String ServerPort="550";
 	public static Socket ClientSocket = null; 
 	private boolean UserLoggedIn = false;
@@ -76,7 +81,9 @@ public class Terminalwindow extends JPanel {
 		UpdateSensorTable(Protocol.getNodeId(Msg), SensorInfo);
 	
 		ActuratorInfo = Protocol.getActuratorInfo(Msg);
-		UpdateActuratorTable(Protocol.getNodeId(Msg), ActuratorInfo);
+		if (ActuratorInfo != null){
+			UpdateActuratorTable(Protocol.getNodeId(Msg), ActuratorInfo);
+		}	
 	}
 	
 	public static void ServerConfigUpdateReq(String light, String alarm, String log)
@@ -89,10 +96,10 @@ public class Terminalwindow extends JPanel {
 			String msg = Protocol.generateConfigDataMsg(RegNodeList[0],"light",light);	
 			Transport.sendMessage(out, msg);		
 			
-			msg = Protocol.generateConfigDataMsg(RegNodeList[0],"alarm",light);	
+			msg = Protocol.generateConfigDataMsg(RegNodeList[0],"alarm",alarm);	
 			Transport.sendMessage(out, msg);		
 			
-			msg = Protocol.generateConfigDataMsg(RegNodeList[0],"log",light);	
+			msg = Protocol.generateConfigDataMsg(RegNodeList[0],"log",log);	
 			Transport.sendMessage(out, msg);		
 			
 			
@@ -147,6 +154,7 @@ public class Terminalwindow extends JPanel {
 				model.addRow(rowdata);
 			}
 			
+			UIManager.put("OptionPane.okButtonText", "Ok");
 			JOptionPane.showMessageDialog(null, new JScrollPane(table));		
 	}
 	
@@ -194,6 +202,24 @@ public class Terminalwindow extends JPanel {
 	}
 	
 	
+	class RefreshHandler implements Runnable {
+
+		public void run() {
+			while (true) {
+	          try {
+	        	  RefreshActionPerformed(null);
+	        	  Thread.sleep(2000);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	            
+	        }
+	    }
+	}
+	
+
+
 	private void ServerNodeUnRegistrationRes(String Msg)
 	{
 		if (Protocol.getResult(Msg).compareTo("success") == 0){
@@ -536,15 +562,31 @@ public class Terminalwindow extends JPanel {
 	
 	private void EmergencyMsgDisplay(String Msg){
 		String data = Protocol.getMsgEmergency(Msg);
+		try {
+			SoundUtils.tone(1000,2000);
+			Thread.sleep(1000);
+		} catch (LineUnavailableException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		UIManager.put("OptionPane.okButtonText", "Ok");
 		JOptionPane.showMessageDialog(Terminal.Window, new JLabel(
-			    "<html><h2><font color='red'>" + data + "</font></h2></html>"));
+			    "<html><h2><font color='red'>" + data + "</font></h2></html>"), "EMERGENCY MESSAGE", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
 	private void InformationMsgDisplay(String Msg){
 		String data = Protocol.getMsgInformation(Msg);
-		UIManager.put("OptionPane.okButtonText", "Ok");
-		JOptionPane.showMessageDialog(Terminal.Window, data);
+		String setVal = Protocol.getMsgInformationData(Msg);
+		UIManager.put("OptionPane.okButtonText", "OK");
+		if (setVal != null){
+			int reply = JOptionPane.showConfirmDialog(Terminal.Window, data , "INFORMATION",JOptionPane.YES_NO_OPTION);
+			if (reply ==JOptionPane.YES_OPTION){
+				NodeUpdateRequest(Protocol.getNodeId(Msg),"alarm","on");
+			}
+		}
+		else{
+			JOptionPane.showMessageDialog(Terminal.Window, data , "INFORMATION",JOptionPane.INFORMATION_MESSAGE);
+		}
 	}
 	
 	public void HandleServerResponse(String MsgType, String Msg){

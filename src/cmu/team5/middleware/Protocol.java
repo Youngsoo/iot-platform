@@ -201,11 +201,10 @@ public class Protocol {
 	public static String generateConfigDataMsg(String NodeId, String Type, String Value)
 	{
 		JSONObject json = new JSONObject();
-		json.put("messageType", "configurableTime");
+		json.put("messageType", "configTime");
 		json.put("nodeId", NodeId);
-		json.put("configurableType", Type);
+		json.put("configType", Type);
 		json.put("time", Value);
-		json.put("unit", "sec");
 		String message = json.toString();
 		return message;
 	}
@@ -290,6 +289,10 @@ public class Protocol {
 			  }
 		
 		}
+		else
+		{
+			return null;
+		}
 		return ActuratorInfo;
 	}
 	
@@ -347,6 +350,24 @@ public class Protocol {
 			value = json.get("messageType").toString();
 			if (value.equals("information")){
 				value = json.get("contents").toString();
+			}
+		}
+		return value;
+	}
+	
+	public static String getMsgInformationData(String Msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(Msg);
+		if (json.get("messageType") != null){
+			value = json.get("messageType").toString();
+			if (value.equals("information")){
+				if (json.get("set") != null){
+					value = json.get("set").toString();
+				}
+				else {
+					value=null;
+				}
 			}
 		}
 		return value;
