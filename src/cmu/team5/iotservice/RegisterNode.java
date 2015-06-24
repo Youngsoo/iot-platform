@@ -69,20 +69,26 @@ class RegisterNode extends Thread
 			// Receive ack message from node
 			message = Transport.getMessage(in);
 			if (message != null) {
+				boolean result= false;
 				String deviceType = Protocol.getDeviceType(message);
 				String deviceKey = Protocol.getNodeId(message);
 						
 				if (deviceType != null && deviceType.equals("node")) {
 					String messageType = Protocol.getMessageType(message);
 					if (messageType != null && messageType.equals("register")) {
+						String resultMsg = Protocol.getResult(message);
+						if (resultMsg == null) result = true;
+						if (result) {
 						// NOTE: This means it is a node info message
-						String nodeName = Protocol.getNodeName(message);
-						nodeMgr.registerNode(deviceKey, nodeName);
+							String nodeName = Protocol.getNodeName(message);
+							nodeMgr.registerNode(deviceKey, nodeName);
+						}
 					}
 				}
 				
 				// Send result to terminal
-				String response = Protocol.generateResultMsg("register", true, null);
+				String reason = Protocol.getReason(message);
+				String response = Protocol.generateResultMsg("register", result, reason);
 				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(terminalOut)), response);
 			}
 

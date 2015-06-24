@@ -19,4 +19,5 @@ public interface DataManagerIF
 	public boolean isRegisteredNode(String nodeId);
 	public void removeRegisteredNode(String nodeId);
 	public ArrayList<LogData> getLogDataAll();
+	public void setLogConfigTime(int time);
 }

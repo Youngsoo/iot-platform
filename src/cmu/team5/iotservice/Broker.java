@@ -83,12 +83,30 @@ public class Broker {
 				nodeMgr.handleSensorMsg(
 						Protocol.getNodeId(message),
 						Protocol.getSensorType(message),
-						Protocol.getSensorValue(message));
+						Protocol.getValue(message));
+				return;
+			}
+			
+			if (messageType.equals("actuator")) {
+				nodeMgr.handleActuatorMsg(
+						Protocol.getNodeId(message),
+						Protocol.getActuatorType(message),
+						Protocol.getValue(message));
 				return;
 			}
 			
 			if (messageType.equals("command")) {
 				nodeMgr.sendCommandMsg(Protocol.getNodeId(message), message);
+				return;
+			}
+			
+			if (messageType.equals("configTime")) {
+				if (Protocol.getConfigType(message).equals("log")) {
+					nodeMgr.setLogConfigTime(Protocol.getTime(message));
+				} else {
+					nodeMgr.sendConfigMsg(Protocol.getNodeId(message), message);
+				}
+				
 				return;
 			}
 			
@@ -131,10 +149,6 @@ public class Broker {
 				String logDataMsg = Protocol.generateLogDataMsg(logList);
 				Transport.sendMessage(new BufferedWriter(new OutputStreamWriter(out)), logDataMsg);
 				return;
-			}
-			
-			if (messageType.equals("configurableTime")) {
-				
 			}
 
 		}

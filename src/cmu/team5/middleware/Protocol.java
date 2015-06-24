@@ -1,5 +1,6 @@
 package cmu.team5.middleware;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -170,7 +171,7 @@ public class Protocol {
 	
 	public static String generateLogDataMsg(ArrayList logList)
 	{
-		final int MAXLOGSIZE = 128;
+		final int MAXLOGSIZE = 1024;//128;
 		JSONObject json = new JSONObject();
 		json.put("messageType", "logData");
 		int logCnt = 0;
@@ -180,11 +181,14 @@ public class Protocol {
 			HashMap map = new HashMap();
 			LogData logData = it.next();
 			
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String time = dateFormat.format(logData.time);
+			
 			map.put("nodeId", logData.nodeId);
 			map.put("logType", logData.type);
-			map.put("time", logData.time);
+			map.put("time", time);
 			map.put("name", logData.name);
-			map.put("value", logData.value);			
+			map.put("value", logData.value);
 			
 			array.add(map);
 			
@@ -397,6 +401,15 @@ public class Protocol {
 		return value;
 	}
 	
+	public static String getReason(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("reason") != null)
+			value = json.get("reason").toString();
+		return value;
+	}
+	
 	public static String[] getNodeList(String msg)
 	{
 		String value = null;
@@ -428,15 +441,6 @@ public class Protocol {
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
 		if (json.get("sensorType") != null)
 			value = json.get("sensorType").toString();
-		return value;
-	}
-
-	public static String getSensorValue(String msg)
-	{
-		String value = null;
-		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		if (json.get("value") != null)
-			value = json.get("value").toString();
 		return value;
 	}
 	
@@ -482,6 +486,24 @@ public class Protocol {
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
 		if (json.get("value") != null)
 			value = json.get("value").toString();
+		return value;
+	}
+	
+	public static String getConfigType(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("configType") != null)
+			value = json.get("configType").toString();
+		return value;
+	}
+	
+	public static String getTime(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("time") != null)
+			value = json.get("time").toString();
 		return value;
 	}
 

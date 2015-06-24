@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 
 import cmu.team5.middleware.*;
@@ -18,20 +19,23 @@ public class DataManagerDummy implements DataManagerIF
 	}
 	
 	private HashMap<String, NodeInfo> nodeInfoList;
-	private ArrayList<LogData> logList;
+	private LinkedList<LogData> logList;
+	int logTime;
 	
-	private static final int MAXLOGSIZE = 256;
+	private static final int DEFAULTLOGTIME = 300; // 5 minute
 	
 	public DataManagerDummy()
 	{
 		nodeInfoList = new HashMap<String, NodeInfo>();
-		logList = new ArrayList<LogData>(MAXLOGSIZE);
+		logList = new LinkedList<LogData>();
+		logTime = DEFAULTLOGTIME;
 		
 		NodeInfo nodeInfo = new NodeInfo();
 		nodeInfo.actuatorInfo.put("light", "off");
 		nodeInfo.actuatorInfo.put("alarm", "off");
 		nodeInfo.actuatorInfo.put("door", "close");
 		nodeInfoList.put("a2de", nodeInfo);
+		//nodeInfoList.put("a35c", nodeInfo);
 	}
 	
 	public boolean saveSensorLog(String nodeId, String sensorType, String value)
@@ -43,9 +47,11 @@ public class DataManagerDummy implements DataManagerIF
 			nodeInfo.sensorInfo.put(sensorType, value);
 		}
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String time = dateFormat.format(new Date());
-		LogData logData = new LogData(nodeId, "sensor", time, sensorType, value);
+		ensureLogData();
+		
+		//SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		//String time = dateFormat.format(new Date());
+		LogData logData = new LogData(nodeId, "sensor", new Date(), sensorType, value);
 		logList.add(logData);
 		
 		return true;
@@ -59,11 +65,12 @@ public class DataManagerDummy implements DataManagerIF
 			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
 			nodeInfo.actuatorInfo.put(actuatorType, value);
 		}
+		
+		ensureLogData();
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String time = dateFormat.format(new Date());
-		System.out.println("time :" + time);
-		LogData logData = new LogData(nodeId, "actuator", time, actuatorType, value);
+		//SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		//String time = dateFormat.format(new Date());
+		LogData logData = new LogData(nodeId, "actuator", new Date(), actuatorType, value);
 		logList.add(logData);
 		
 		return true;
@@ -73,18 +80,37 @@ public class DataManagerDummy implements DataManagerIF
 	{
 		System.out.println("[LOG] nodeId:" + nodeId + ", actuatorType:" + actuatorType + ", value:" + value);
 		
+		/*
 		if (nodeInfoList.containsKey(nodeId)) {
 			NodeInfo nodeInfo = nodeInfoList.get(nodeId);
 			nodeInfo.actuatorInfo.put(actuatorType, value);
 		}
+		*/
+		
+		ensureLogData();
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String time = dateFormat.format(new Date());
-		System.out.println("time :" + time);
-		LogData logData = new LogData(nodeId, "command", time, actuatorType, value);
+		//SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		//String time = dateFormat.format(new Date());
+		LogData logData = new LogData(nodeId, "command", new Date(), actuatorType, value);
 		logList.add(logData);
 		
 		return true;
+	}
+	
+	private void ensureLogData()
+	{
+		long configTime = new Date().getTime() - logTime*1000;
+		Date configDate = new Date();
+		configDate.setTime(configTime);
+		
+		for (Iterator<LogData> it = logList.iterator(); it.hasNext();) {
+			LogData logData = it.next();
+			if (logData.time.before(configDate)) {
+				it.remove();
+			} else {
+				break;
+			}
+		}
 	}
 
 	public boolean isValidLogin(String userId, String passwd)
@@ -156,6 +182,7 @@ public class DataManagerDummy implements DataManagerIF
 	
 	public final ArrayList<LogData> getLogDataAll()
 	{
+		ensureLogData();
 		return new ArrayList<LogData>(logList);
 	}
 	
@@ -163,5 +190,11 @@ public class DataManagerDummy implements DataManagerIF
 	{
 		if (nodeInfoList.containsKey(nodeId)) return true;
 		else return false;
+	}
+	
+	public void setLogConfigTime(int time)
+	{
+		this.logTime = time;
+		ensureLogData();
 	}
 }

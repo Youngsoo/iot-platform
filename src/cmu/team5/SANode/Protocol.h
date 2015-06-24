@@ -37,6 +37,7 @@
 #define	STR_SENSOR					"sensor"
 #define	STR_ACTUATOR				"actuator"
 #define	STR_COMMAND					"command"
+#define	STR_CONFIGURABLET_TIME		"configTime"
 
 #define	STR_NODE_DATA				"nodeData"
 
@@ -53,12 +54,19 @@
 #define	STR_FAIL					"fail"
 #define	STR_REASON					"reason"
 #define STR_INFORMATION				"information"
+#define STR_EMERGENCY				"emergency"
+
 #define STR_CONTENTS				"contents"
+#define STR_CONFIGURABLE_TYPE		"configType"
+#define STR_TIME					"time"
+
+
+
 #define STR_ASK_CONTENTS			"House is vacant, set alarm?"
 #define STR_EMERGENCE_CONTENTS		"Alarm by door open or sudden occupation"
 #define STR_DISABLE_OPEN			"The door is unable to open because alarm is set"
 #define STR_MAIL_DELIVERY			"Mail is delivered!"
-#define STR_MAIL_TAKEN				"Mail is taken!"
+#define STR_MAIL_TAKEN				"Mailbox is empty!"
 
 
 
@@ -81,11 +89,15 @@ public:
 	JsonObject& makeNotificationMessage(char *msgType,char * contents);
 	void 		controlActuator(const char * target,const char * commnad);
 	JsonObject& makeActuatorValue(const char *actuatorName,char * value);
+	int 		getAutoTurnOffLight(void);
+	int 		getAutoAlarmTime(void);
 private:
 	int 	nodeType;
 	char	password[5];
 	actuatorMgr m_actuatorMgr;
 	sensorMgr	m_sensorMgr;
+	int			m_nAutoAlarmTime;
+	int			m_nAutoTurnOffLight;
 };
 #endif
 //

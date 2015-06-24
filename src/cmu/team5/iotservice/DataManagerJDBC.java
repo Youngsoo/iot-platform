@@ -152,4 +152,8 @@ public class DataManagerJDBC implements DataManagerIF
 		return false;
 	}
 
+	public void setLogConfigTime(int time) {
+		
+	}
+
 }

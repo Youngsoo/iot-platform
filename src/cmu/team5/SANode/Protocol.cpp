@@ -4,6 +4,8 @@ void protocolMgr::initailize(void)
 {
 	m_actuatorMgr.initailize();
 	m_sensorMgr.initailize(isLetterBox());
+	m_nAutoAlarmTime=5*60;
+	m_nAutoTurnOffLight=5*60;
 }
 void protocolMgr::writeString2EEPROM(const char* pString,int offset,int length)
 {
@@ -81,9 +83,28 @@ JsonObject* protocolMgr::parseJson(char* bufJson)
 				JsonObject& json=makeNotificationMessage(STR_INFORMATION,STR_DISABLE_OPEN);	
 				return &json;
 			}
-		}
+		}		
 		m_actuatorMgr.handleActuator(actuatorType,value);
-	}	
+		JsonObject& json=makeActuatorValue(actuatorType,(char *)value);
+		return &json;;
+		
+	}
+	else if(strcmp(messageType,STR_CONFIGURABLET_TIME)==0)
+	{
+		const char* configuableType = root[STR_CONFIGURABLE_TYPE];
+		const char* Time = root[STR_TIME];
+		Serial.println(Time);
+		if(strcmp(configuableType,STR_ALARM)==0)
+		{
+			m_nAutoAlarmTime=atoi(Time);
+			
+		}
+		else
+		{
+			m_nAutoTurnOffLight=atoi(Time);
+		}
+			
+	}
 	return sendJson;
 
 }
@@ -192,4 +213,13 @@ void protocolMgr::controlActuator(const char * target,const char * commnad)
 	m_actuatorMgr.handleActuator(target,commnad);
 }
 
+int protocolMgr::getAutoAlarmTime(void)
+{
+	return m_nAutoAlarmTime;
+}
+
+int protocolMgr::getAutoTurnOffLight(void)
+{
+	return m_nAutoTurnOffLight;
+}
 
