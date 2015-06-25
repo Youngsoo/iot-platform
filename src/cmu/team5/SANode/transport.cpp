@@ -133,15 +133,19 @@ int transportMgr::handleEvent(void)
 		}
 	}
 	curTime=millis()/1000;	
-	if(EEPROM.read(EEPROM_ADDR_LIGHT)==true || strcmp(preSensoInfo[ENUM_INDEX_DETECT],STR_DETECT)==0)	startTime4AutoLightOff=0;
+	if(EEPROM.read(EEPROM_ADDR_LIGHT)==false || strcmp(preSensoInfo[ENUM_INDEX_DETECT],STR_DETECT)==0)	
+	{
+		startTime4AutoLightOff=0;
+		bLightStatus=false;
+	}
 	else
 	{
 		if(bLightStatus != EEPROM.read(EEPROM_ADDR_LIGHT))
 		{
 			startTime4AutoLightOff=curTime;
+			bLightStatus=EEPROM.read(EEPROM_ADDR_LIGHT);
 		}
 	}
-	if(strcmp(preSensoInfo[ENUM_INDEX_DETECT],STR_DETECT)==0 || bAlarmed==true)		startTime4AutoLightOff=0;
 	/*if(strcmp(preSensoInfo[ENUM_INDEX_DETECT],STR_UNDETECT)==0 && EEPROM.read(EEPROM_ADDR_LIGHT)==true && startTime4AutoLightOff==0)
 	{
 		startTime4AutoLightOff=curTime;
@@ -345,6 +349,7 @@ int transportMgr::connectionHandler(void)
   return true;
 }
 
+
 int transportMgr::sendMessage(WiFiClient socket,String sendBuf)
 {
 
@@ -353,16 +358,25 @@ int transportMgr::sendMessage(WiFiClient socket,String sendBuf)
 	sprintf(bufHeader,"%s%08d",PACKET_MAGIC,length);
 	socket.print(bufHeader);
 	Serial.println(bufHeader);
-	if(length>80)
+
+	for(int split=0; split< length ; split+=STR_LENGTH_SPLIT)
 	{
-		socket.print(sendBuf.substring(0,79));
-		socket.print(sendBuf.substring(79));
-		
-		Serial.println(sendBuf.substring(0,79));
-		Serial.println(sendBuf.substring(79));
+		if(length-split < STR_LENGTH_SPLIT)	
+ 		{
+ 			socket.print(sendBuf.substring(split));
+			Serial.println(sendBuf.substring(split));
+ 			
+ 		}
+ 		else
+ 		{
+ 			socket.print(sendBuf.substring(split,split+STR_LENGTH_SPLIT));
+			Serial.println(sendBuf.substring(split,split+STR_LENGTH_SPLIT));
+ 		}
 	}
-	else 		socket.print(sendBuf);
+
 	Serial.println(sendBuf);
+
+	return 0;
 }
 
 int transportMgr::sendMessage(WiFiClient socket,JsonObject&  sendMsg)

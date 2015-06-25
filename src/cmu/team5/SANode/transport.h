@@ -33,6 +33,7 @@ enum
 #define SERVER_PORTID  550               // IP socket port ID
 #define FIND_PORTID  551               // IP socket port ID
 #define WIFI_SSID		"LGTeam5"
+#define STR_LENGTH_SPLIT	30
 
 class transportMgr
 {

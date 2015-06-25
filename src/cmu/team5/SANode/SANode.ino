@@ -60,6 +60,6 @@ void loop()
 	Serial.println("----------------------------------");
 	TransPortManager.connectionHandler();
 	delay(500);
-	Serial.println("+++++++++++++++++++++++++++++++++++");
+	//Serial.println("+++++++++++++++++++++++++++++++++++");
 } //  LOOP
 
