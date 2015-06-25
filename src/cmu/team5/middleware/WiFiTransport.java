@@ -72,13 +72,14 @@ public class WiFiTransport implements Transportable
 	
 					//System.out.println(">> " + recvMsg);
 
-					observer.notify(new IoTMessage(recvMsg, out));
+					observer.notify(new IoTMessage(clientNumber, recvMsg, out));
 				}
 
 			} catch (IOException e) {
 				System.out.println("Error handling client# " + clientNumber + ": " + e);
 			} finally {
 				try {
+					observer.notify(new IoTMessage(clientNumber, true));
 					socket.close();
 				} catch (IOException e) {
 					System.out.println("Couldn't close a socket, what's going on?");

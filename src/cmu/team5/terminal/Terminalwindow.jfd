@@ -4,7 +4,7 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-			"$columnSpecs": "default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default"
+			"$columnSpecs": "default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default, labelcompgap, default"
 			"$rowSpecs": "default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default"
 		} ) {
 			name: "this"
@@ -56,8 +56,9 @@ new FormModel {
 					name: "NodeInfo"
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 7
+				"gridX": 3
 				"gridY": 15
+				"gridWidth": 11
 			} )
 			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 				name: "scrollPane2"
@@ -65,21 +66,28 @@ new FormModel {
 					name: "NodeControl"
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 13
+				"gridX": 15
 				"gridY": 15
+				"gridWidth": 5
 			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
 				name: "Refresh"
 				"text": "Refresh"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 7
+				"gridX": 11
+				"gridY": 17
+			} )
+			add( new FormComponent( "javax.swing.JComboBox" ) {
+				name: "ActNameList"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 15
 				"gridY": 17
 			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
 				name: "Update"
 				"text": "Update"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-				"gridX": 13
+				"gridX": 17
 				"gridY": 17
 			} )
 		}, new FormLayoutConstraints( null ) {

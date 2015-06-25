@@ -20,31 +20,42 @@ enum
 	HANDLE_RET_VAL_CONTINUE=0,
 	HANDLE_RET_VAL_STOP=1	
 };
+enum
+{
+	ENUM_INDEX_DETECT=0,
+	ENUM_INDEX_DOORSTATE,
+	ENUM_INDEX_HUMIDITY,
+	ENUM_INDEX_TEMPERATURE,
+	ENUM_INDEX_MAX,
+	ENUM_INDEX_LIGHT,
+	ENUM_INDEX_ALARM
+};
+#define SERVER_PORTID  550               // IP socket port ID
+#define FIND_PORTID  551               // IP socket port ID
+#define WIFI_SSID		"LGTeam5"
+
 class transportMgr
 {
 public:
-	void 	initailize(char * pSsid,IPAddress ipAddress,int pServerPort,int pFindPort);	
+	void 	initailize(char * pSsid);	
 	void 	printConnectionStatus() ;
 	int		connectionHandler(void);
 	int 	sendMessage(WiFiClient socket,JsonObject&  sendMsg);
 	int 	handleMessage(WiFiClient socket,char readData);
+	int 	IPToNetAddr (char * IPStr, uint8_t * NetAddr);	
+	int 	handleEvent(void);
+	int 	handleEvent4MailBox(void);
 private:
-	char ssid[20];
-	int status;
 	boolean isConntected;
-	long rssi;                        // Wifi shield signal strength
-	byte mac[6];                      // Wifi shield MAC address
 	WiFiClient client;                // The client (our) socket
 	WiFiClient listenSock;            // The client (our) socket
-	IPAddress myip;                     // The IP address of the shield
-	IPAddress subnet;                 // The IP address of the shield
-	int serverPort;
-	int findPort;
 	int	curCount;
 	long jsonLength;
 	char bufJsonData[LENGTH_OF_JSON_STRING]; 
 	protocolMgr protocolManager;
-	IPAddress	serverIP;
+	
+	char		preSensoInfo[ENUM_INDEX_MAX][10];
+	boolean 	bAlarmed;
 };
 #endif
 //

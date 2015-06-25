@@ -1,10 +1,12 @@
 package cmu.team5.middleware;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.json.simple.*;
@@ -27,8 +29,8 @@ public class Protocol {
 		JSONObject json = new JSONObject();
 		json.put("messageType", "command");
 		json.put("nodeId", nodeId);
-		json.put("sensorType", sensorType);
-		json.put("value", Integer.parseInt(sensorValue));
+		json.put("actuatorType", sensorType);
+		json.put("value", sensorValue);
 		String message = json.toString();
 		return message;
 	}
@@ -151,6 +153,13 @@ public class Protocol {
 		String message = json.toString();
 		return message;
 	}
+	
+	public static String generateLogInfoMsg(){
+		JSONObject json = new JSONObject();
+		json.put("messageType", "logData");
+		String message = json.toString();
+		return message;
+	}
 
 	public static String generateRegisteredNodeMsg(){
 		JSONObject json = new JSONObject();
@@ -162,25 +171,44 @@ public class Protocol {
 	
 	public static String generateLogDataMsg(ArrayList logList)
 	{
+		final int MAXLOGSIZE = 1024;//128;
 		JSONObject json = new JSONObject();
 		json.put("messageType", "logData");
+		int logCnt = 0;
 		
 		ArrayList array = new ArrayList();
 		for (Iterator<LogData> it = logList.iterator(); it.hasNext();) {
 			HashMap map = new HashMap();
 			LogData logData = it.next();
 			
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String time = dateFormat.format(logData.time);
+			
 			map.put("nodeId", logData.nodeId);
-			map.put("type", logData.type);
-			map.put("time", logData.time);
+			map.put("logType", logData.type);
+			map.put("time", time);
 			map.put("name", logData.name);
-			map.put("value", logData.value);			
+			map.put("value", logData.value);
 			
 			array.add(map);
+			
+			if (++logCnt > MAXLOGSIZE) break;
 		}
 		
 		if (array.size() > 0)
 			json.put("log", array);
+		String message = json.toString();
+		return message;
+	}
+	
+	
+	public static String generateConfigDataMsg(String NodeId, String Type, String Value)
+	{
+		JSONObject json = new JSONObject();
+		json.put("messageType", "configTime");
+		json.put("nodeId", NodeId);
+		json.put("configType", Type);
+		json.put("time", Value);
 		String message = json.toString();
 		return message;
 	}
@@ -194,6 +222,10 @@ public class Protocol {
 		return value;
 	}
 	
+	
+	
+	
+	
 	public static String getDeviceType(String msg)
 	{
 		String value = null;
@@ -202,6 +234,30 @@ public class Protocol {
 			value = json.get("deviceType").toString();
 		return value;
 	}	
+	
+	
+	public static List<HashMap<String,String>> getLogsData(String msg)
+	{	List<HashMap<String,String>> Log = new ArrayList<HashMap<String, String>>();	
+		String value = null;
+		JSONObject json1 = (JSONObject)JSONValue.parse(msg);
+		if (json1.get("log") != null){
+			value = json1.get("log").toString();
+			JSONArray DataArray = (JSONArray) json1.get("log");
+			Iterator<JSONObject> iterator = DataArray.iterator();
+			while (iterator.hasNext()) {
+				HashMap<String, String> LogInfo = new HashMap<String, String>();
+				JSONObject json2 = (JSONObject) iterator.next();
+				System.out.println(json2.get("nodeId") + " " + json2.get("logType"));
+				if (json2.get("nodeId") != null) LogInfo.put("nodeId", json2.get("nodeId").toString());
+				if (json2.get("logType") != null) LogInfo.put("logType", json2.get("logType").toString());
+				if (json2.get("time") != null) LogInfo.put("time", json2.get("time").toString());
+				if (json2.get("name") != null) LogInfo.put("name", json2.get("name").toString());
+				if (json2.get("value") != null) LogInfo.put("value", json2.get("value").toString());
+				Log.add(LogInfo);
+			}
+		}	
+		return Log;
+	}
 
 	public static HashMap<String,String> getActuratorInfo(String msg)
 	{
@@ -222,7 +278,7 @@ public class Protocol {
 		JSONObject json1 = (JSONObject)JSONValue.parse(msg);
 		if (json1.get("actuator") != null){
 			value = json1.get("actuator").toString();
-		
+			System.out.println(value);
 			try{
 				JSONParser parser = new JSONParser();
 			    Map json = (Map)parser.parse(value, containerFactory);
@@ -236,6 +292,10 @@ public class Protocol {
 			    System.out.println(pe);
 			  }
 		
+		}
+		else
+		{
+			return null;
 		}
 		return ActuratorInfo;
 	}
@@ -286,12 +346,67 @@ public class Protocol {
 		return value;
 	}
 	
+	
+	public static String getMsgInformation(String msg){
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("messageType") != null){
+			value = json.get("messageType").toString();
+			if (value.equals("information")){
+				value = json.get("contents").toString();
+			}
+		}
+		return value;
+	}
+	
+	public static String getMsgInformationData(String Msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(Msg);
+		if (json.get("messageType") != null){
+			value = json.get("messageType").toString();
+			if (value.equals("information")){
+				if (json.get("set") != null){
+					value = json.get("set").toString();
+				}
+				else {
+					value=null;
+				}
+			}
+		}
+		return value;
+	}
+	
+	public static String getMsgEmergency(String msg){
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("messageType") != null){
+			value = json.get("messageType").toString();
+			if (value.equals("emergency")){
+				value = json.get("contents").toString();
+			}
+		}
+		return value;
+	}
+	
+	
+	
+	
 	public static String getResult(String msg)
 	{
 		String value = null;
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
 		if (json.get("result") != null)
 			value = json.get("result").toString();
+		return value;
+	}
+	
+	public static String getReason(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("reason") != null)
+			value = json.get("reason").toString();
 		return value;
 	}
 	
@@ -328,15 +443,6 @@ public class Protocol {
 			value = json.get("sensorType").toString();
 		return value;
 	}
-
-	public static String getSensorValue(String msg)
-	{
-		String value = null;
-		JSONObject json = (JSONObject)JSONValue.parse(msg);
-		if (json.get("value") != null)
-			value = json.get("value").toString();
-		return value;
-	}
 	
 	public static String getSerial(String msg)
 	{
@@ -362,6 +468,42 @@ public class Protocol {
 		JSONObject json = (JSONObject)JSONValue.parse(msg);
 		if (json.get("passwd") != null)
 			value = json.get("passwd").toString();
+		return value;
+	}
+	
+	public static String getActuatorType(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("actuatorType") != null)
+			value = json.get("actuatorType").toString();
+		return value;
+	}
+	
+	public static String getValue(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("value") != null)
+			value = json.get("value").toString();
+		return value;
+	}
+	
+	public static String getConfigType(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("configType") != null)
+			value = json.get("configType").toString();
+		return value;
+	}
+	
+	public static String getTime(String msg)
+	{
+		String value = null;
+		JSONObject json = (JSONObject)JSONValue.parse(msg);
+		if (json.get("time") != null)
+			value = json.get("time").toString();
 		return value;
 	}
 

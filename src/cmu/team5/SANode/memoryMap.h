@@ -9,11 +9,19 @@
 #include <EEPROM.h>
 
 /*------------------------------------------------------------------------------------------------------
-|start address	|	length	|	field description	|	value description 								|
+|start address						|	length	|	field description		|	value description 								|
 --------------------------------------------------------------------------------------------------------
-|	0			|	1		|node resiter or not 	|	0:unregister, 1:register					
-|	1			|	1		|server IP length		|	7~15						
-|	2			|	15		|server IP address		|
+|	EEPROM_ADDR_NODE_REG			|	1		|node resiter or not 		|	0:unregister, 1:register					
+|	EEPROM_ADDR_SERVERIP_LENGTH		|	1		|server IP length			|	7~15						
+|	EEPROM_ADDR_SERVERIP			|	15		|server IP address			|	xxx.xxx.xxx.xxx
+|	EEPROM_ADDR_CONFIG_ALARM		|	1		|configurable time for alarm|	second
+|	EEPROM_ADDR_CONFIG_LIGHT		|	1		|configurable time for light|	second
+|	EEPROM_ADDR_ALARM				|	1		|alarm value				|	0:off, 	1:on
+|	EEPROM_ADDR_LIGHT				|	1		|alarm value				|	0:off, 	1:on
+|	EEPROM_ADDR_DOOR				|	1		|alarm value				|	0:close,1:open
+
+
+
 |
 ---------------------------------------------------
 
@@ -24,8 +32,12 @@ enum
 	EEPROM_ADDR_NODE_REG=1,
 	EEPROM_ADDR_SERVERIP_LENGTH,
 	EEPROM_ADDR_SERVERIP,
-	EEPROM_ADDR_ALARM_TIME_MIN=EEPROM_ADDR_SERVERIP+EEPROM_SERVERIP_LENGTH,
-	EEPROM_ADDR_WINDOW_HOUR,
+	EEPROM_ADDR_CONFIG_ALARM=EEPROM_ADDR_SERVERIP+EEPROM_SERVERIP_LENGTH,
+	EEPROM_ADDR_CONFIG_LIGHT,
+	EEPROM_ADDR_ALARM,
+	EEPROM_ADDR_LIGHT,
+	EEPROM_ADDR_DOOR,
+	
 };
 
 #endif

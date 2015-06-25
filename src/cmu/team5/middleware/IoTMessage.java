@@ -4,13 +4,30 @@ import java.io.OutputStream;
 
 public class IoTMessage
 {
+	private int clientNumber;
 	private String message;
 	private OutputStream stream;
+	private boolean isClosed;
 	
-	public IoTMessage(String msg, OutputStream stream)
+	public IoTMessage(int clientNumber, String msg, OutputStream stream)
 	{
+		this.clientNumber = clientNumber;
 		this.message = msg;
 		this.stream = stream;
+		this.isClosed = false;
+	}
+	
+	public IoTMessage(int clientNumber, boolean isClosed)
+	{
+		this.clientNumber = clientNumber;
+		this.isClosed = isClosed;
+		this.message = null;
+		this.stream = null;
+	}
+	
+	public int getClientNumber()
+	{
+		return clientNumber;
 	}
 	
 	public String getMessage()
@@ -23,13 +40,14 @@ public class IoTMessage
 		return stream;
 	}
 	
-	public void setMessage(String message)
+	public void setClosed(boolean isClosed)
 	{
-		this.message = message;
+		this.isClosed = isClosed;
 	}
 	
-	public void setStream(OutputStream stream)
+	public boolean isClosed()
 	{
-		this.stream = stream;
+		return isClosed;
 	}
+	
 }

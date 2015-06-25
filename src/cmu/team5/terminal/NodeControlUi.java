@@ -106,7 +106,9 @@ default:
 
 
 public void UpdateSourceList(String NodeId, HashMap<String, String> data){
-	   
+	
+	 List<SourceModel> tempSourceList = new ArrayList<SourceModel>();
+	  
 	String ActName,Value;
 	ActName=Value=null;
 	
@@ -116,12 +118,12 @@ public void UpdateSourceList(String NodeId, HashMap<String, String> data){
 	      ActName = (String)entry.getKey();
 	      Value = (String)entry.getValue();
 	      SourceModel source = new SourceModel();
-
+	      System.out.println(ActName + " " + Value);
 
 	      switch(ActName){
 	    //Door Act (open/close)	
-	      case "door":	
-	     	  if (Value.equals("close")){
+	      case "door":
+	    	  if (Value.equals("close")){
 	  			source.setSelect(true);
 	  		    source.setInActive(false);
 	  		    source.setFactory("door");
@@ -133,7 +135,8 @@ public void UpdateSourceList(String NodeId, HashMap<String, String> data){
 	  		    source.setFactory("door");
 	  		    source.setSupplier(NodeId);
 	  		  }
-	     	 this.sourceList.add(source);
+	    	  tempSourceList.add(source);
+	    	  Terminalwindow.UpdateActNameList(ActName);
 	     	 break;
 	     	//light/alarm Act (on/off)	 
 	      case "light":
@@ -150,29 +153,29 @@ public void UpdateSourceList(String NodeId, HashMap<String, String> data){
 	  		    source.setFactory(ActName);
 	  		    source.setSupplier(NodeId);
 	  		  }
-	     	 this.sourceList.add(source);
+	     	 tempSourceList.add(source);
+	    	 Terminalwindow.UpdateActNameList(ActName);
 	     	 break; 	 
 	      default:
 	    	break;  
 	     }
-	 }    	
+	 }  
+	 sourceList.clear();
+	 sourceList.addAll(tempSourceList);
+	 fireTableRowsUpdated(0,getRowCount() - 1);
 }
 
 private List<SourceModel> getSourceDOList() {
    List<SourceModel> tempSourceList = new ArrayList<SourceModel>();
    
-   //   for (int index = 0; index < 3; index++) {
-
-  //Set Default Value for Door 
-/*    SourceModel source = new SourceModel();
-    source.setSelect(true);
+  for (int index = 0; index < 3; index++) {
+   SourceModel source = new SourceModel();  
+    source.setSelect(false);
     source.setInActive(false);
-    source.setFactory("Door");
-    source.setSupplier("NodeId ");
-    tempSourceList.add(source);
-*/    
-       
-//}
+    source.setFactory("");
+    source.setSupplier("");
+    tempSourceList.add(source);        
+}
 return tempSourceList;
 }
 }
