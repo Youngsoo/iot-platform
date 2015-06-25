@@ -41,6 +41,7 @@ public:
 	void 	printConnectionStatus() ;
 	int		connectionHandler(void);
 	int 	sendMessage(WiFiClient socket,JsonObject&  sendMsg);
+	int 	sendMessage(WiFiClient socket,String sendBuf);
 	int 	handleMessage(WiFiClient socket,char readData);
 	int 	IPToNetAddr (char * IPStr, uint8_t * NetAddr);	
 	int 	handleEvent(void);
