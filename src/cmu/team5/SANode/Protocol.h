@@ -59,6 +59,7 @@
 #define STR_CONTENTS				"contents"
 #define STR_CONFIGURABLE_TYPE		"configType"
 #define STR_TIME					"time"
+#define STR_SET						"set"
 
 
 
@@ -68,6 +69,8 @@
 #define STR_MAIL_DELIVERY			"Mail is delivered!"
 #define STR_MAIL_TAKEN				"Mailbox is empty!"
 
+#define STR_QUOTE					"\""
+#define STR_CONLON					":"
 
 
 class protocolMgr
@@ -87,10 +90,17 @@ public:
 	char * 		getSersorValue(const char * sensorName);
 	JsonObject& makeSensorValue(const char *sensorName,char * value);
 	JsonObject& makeNotificationMessage(char *msgType,char * contents);
+	JsonObject& makeNotificationMessage(char *msgType,char * contents,char * setData);
+	void 		makeNotificationMessage(String * output,char *msgType,char * contents);
+	void 		makeNotificationMessage(String * output,char *msgType,char * contents,char * setData);
+		
 	void 		controlActuator(const char * target,const char * commnad);
 	JsonObject& makeActuatorValue(const char *actuatorName,char * value);
+	void 		makeActuatorValue(String * output,char *actuatorName,char * value);
 	int 		getAutoTurnOffLight(void);
 	int 		getAutoAlarmTime(void);
+	void 		addJson(String * output,char * key,char * value);
+	void 		makeSensorValue(String * output,char *sensorName,char * value);
 private:
 	int 	nodeType;
 	char	password[5];

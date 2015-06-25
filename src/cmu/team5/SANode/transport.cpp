@@ -5,6 +5,7 @@
 #include <Stdio.h>
 #include <IPAddress.h>
 
+#define USE_LIB_FOR_DECODING		0
 
 #define PACKET_MAGIC			"ToNY"
 #define PACKET_MAGIC_LENGTH			4
@@ -18,7 +19,7 @@ void transportMgr::initailize(char * pSsid)
 {
 	int status;	
 	status=WL_IDLE_STATUS;
-	Serial.println("Attempting to connect to network...");
+	//Serial.println("Attempting to connect to network...");
 	//Serial.print("SSID: ");
 	Serial.println(pSsid);
 	
@@ -26,7 +27,7 @@ void transportMgr::initailize(char * pSsid)
 	// Attempt to connect to Wifi network.
 	while ( status != WL_CONNECTED) 
 	{ 
-	Serial.print("Attempting to connect to SSID: ");
+	//Serial.print("Attempting to connect to SSID: ");
 	Serial.println(pSsid);
 	status = WiFi.begin(pSsid);
 	}  
@@ -38,8 +39,7 @@ void transportMgr::initailize(char * pSsid)
 	memset(bufJsonData,0,LENGTH_OF_JSON_STRING);
 	isConntected=false;
 	bAlarmed=false;
-	
-	//EEPROM.write(EEPROM_ADDR_NODE_REG, false);
+	EEPROM.write(EEPROM_ADDR_NODE_REG, false);
 }
 
 int transportMgr::handleEvent4MailBox(void)
@@ -68,7 +68,8 @@ int transportMgr::handleEvent4MailBox(void)
 }
 int transportMgr::handleEvent(void)
 {
-	static 	unsigned long startTime4AutoLightOff=0,startTime4SetAlarm=0;
+	static 	unsigned int startTime4AutoLightOff=0,startTime4SetAlarm=0;
+	static 	boolean bLightStatus=false;
 	boolean bSendEmergencyMsg=false,bAskMessage=false;
 	int			sensorCount=ENUM_INDEX_MAX,count=0;	
 	unsigned long curTime;
@@ -90,8 +91,14 @@ int transportMgr::handleEvent(void)
 		//Serial.println( curValue);
 		if(strcmp(curValue,preSensoInfo[count]) !=0)
 		{
+#if USE_LIB_FOR_DECODING
 			JsonObject& json = protocolManager.makeSensorValue(sensorName[count],curValue);
-			sendMessage(client,json);
+			sendMessage(client,json);			
+#else
+			String sendData="{";
+			protocolManager.makeSensorValue(&sendData,(char *)sensorName[count],curValue);
+			sendMessage(client,sendData);				
+#endif//#if USE_LIB_FOR_DECODING
 			if(strcmp(sensorName[count],STR_PROXIMITY)==0)
 			{
 				if(strcmp(curValue,STR_UNDETECT)==0)
@@ -101,7 +108,7 @@ int transportMgr::handleEvent(void)
 						bAskMessage=true;
 						startTime4SetAlarm=curTime;
 					}
-					startTime4AutoLightOff=curTime;	
+					//startTime4AutoLightOff=curTime;	
 				}
 				else	//detect
 				{
@@ -111,18 +118,34 @@ int transportMgr::handleEvent(void)
 			}
 			if(strcmp(sensorName[count],STR_DOORSTATE)==0)
 			{
+				char * doorFromAct=STR_OPEN;
+				if(EEPROM.read(EEPROM_ADDR_DOOR)==false)	doorFromAct=STR_CLOSE;
 				if(strcmp(curValue,STR_OPEN)==0 && bAlarmed==true)	bSendEmergencyMsg=true;
+				if(strcmp(curValue,doorFromAct) !=0)
+				{
+					String sendData="{";
+					protocolManager.makeActuatorValue(&sendData,STR_DOOR,curValue);
+					sendMessage(client,sendData);		
+				}
 			}
 			
 			strcpy(preSensoInfo[count],curValue);
 		}
 	}
-	
-	if(strcmp(preSensoInfo[ENUM_INDEX_DETECT],STR_UNDETECT)==0 && EEPROM.read(EEPROM_ADDR_LIGHT)==true && startTime4AutoLightOff==0)
+	curTime=millis()/1000;	
+	if(EEPROM.read(EEPROM_ADDR_LIGHT)==true || strcmp(preSensoInfo[ENUM_INDEX_DETECT],STR_DETECT)==0)	startTime4AutoLightOff=0;
+	else
+	{
+		if(bLightStatus != EEPROM.read(EEPROM_ADDR_LIGHT))
+		{
+			startTime4AutoLightOff=curTime;
+		}
+	}
+	if(strcmp(preSensoInfo[ENUM_INDEX_DETECT],STR_DETECT)==0 || bAlarmed==true)		startTime4AutoLightOff=0;
+	/*if(strcmp(preSensoInfo[ENUM_INDEX_DETECT],STR_UNDETECT)==0 && EEPROM.read(EEPROM_ADDR_LIGHT)==true && startTime4AutoLightOff==0)
 	{
 		startTime4AutoLightOff=curTime;
-	}
-	curTime=millis()/1000;	
+	}*/
 	//Serial.println( millis());
 	Serial.println( curTime);
 	Serial.println( startTime4AutoLightOff);
@@ -130,31 +153,61 @@ int transportMgr::handleEvent(void)
 	Serial.println( startTime4SetAlarm);
 	if(bAskMessage==true)	
 	{
-		JsonObject& json=protocolManager.makeNotificationMessage(STR_INFORMATION,STR_ASK_CONTENTS);
+#if USE_LIB_FOR_DECODING
+		JsonObject& json=protocolManager.makeNotificationMessage(STR_INFORMATION,STR_ASK_CONTENTS,STR_ALARM);
 		sendMessage(client,json);
+#else
+		String sendData2="{";
+		protocolManager.makeNotificationMessage(&sendData2,STR_INFORMATION,STR_ASK_CONTENTS,STR_ALARM);
+		sendMessage(client,sendData2);
+#endif
 	}
 	if(bSendEmergencyMsg==true)	
 	{
+#if USE_LIB_FOR_DECODING	
 		JsonObject& json =protocolManager.makeNotificationMessage(STR_EMERGENCY,STR_EMERGENCE_CONTENTS);	
 		sendMessage(client,json);
+#else
+		String sendData="{";
+		protocolManager.makeNotificationMessage(&sendData,STR_EMERGENCY,STR_EMERGENCE_CONTENTS);
+		sendMessage(client,sendData);	
+#endif
 	}
 	if(startTime4AutoLightOff != 0 && curTime-startTime4AutoLightOff > autoTurnOffLight) 
 	{
 		protocolManager.controlActuator(STR_LIGHT,STR_OFF);
+#if USE_LIB_FOR_DECODING
 		JsonObject& json =protocolManager.makeActuatorValue(STR_LIGHT,STR_OFF);
 		sendMessage(client,json);
+#else
+		String sendData="{";
+		protocolManager.makeSensorValue(&sendData,STR_LIGHT,STR_OFF);
+		sendMessage(client,sendData);		
+#endif
 		startTime4AutoLightOff=0;
 	}
 	if(startTime4SetAlarm != 0 && curTime-startTime4SetAlarm > autoAlarmTime) 
 	{
 		protocolManager.controlActuator(STR_ALARM,STR_ON);
+#if USE_LIB_FOR_DECODING
 		JsonObject& json =protocolManager.makeActuatorValue(STR_ALARM,STR_ON);
 		sendMessage(client,json);
+#else
+		JsonObject& json =protocolManager.makeActuatorValue(STR_ALARM,STR_ON);	
+		sendMessage(client,json);
+#endif
 		if(strcmp(preSensoInfo[ENUM_INDEX_DOORSTATE],STR_OPEN)==0)
 		{
 			protocolManager.controlActuator(STR_DOOR,STR_CLOSE);
+#if USE_LIB_FOR_DECODING		
 			JsonObject& json =protocolManager.makeActuatorValue(STR_DOOR,STR_CLOSE);	
 			sendMessage(client,json);
+#else
+			String sendData="{";
+			protocolManager.makeActuatorValue(&sendData,STR_DOOR,STR_CLOSE);
+			sendMessage(client,sendData);		
+#endif 
+
 		}
 		startTime4SetAlarm=0;
 	}
@@ -190,7 +243,7 @@ int transportMgr::handleMessage( WiFiClient socket,char readData)
 	{
 		JsonObject* sendJson=NULL;
 		//Serial.println( "jsonLength:70");
-		Serial.println( jsonLength);
+		//Serial.println( jsonLength);
 		Serial.println( &bufJsonData[PACKET_MAGIC_LENGTH+PACKET_JSON_SIZE_LENGTH]);
 		sendJson=protocolManager.parseJson(&bufJsonData[PACKET_MAGIC_LENGTH+PACKET_JSON_SIZE_LENGTH]);
 		if(sendJson !=NULL)
@@ -224,11 +277,11 @@ int transportMgr::connectionHandler(void)
 
 		IPToNetAddr(pServerIP,convServerIP);
 		serverIP=IPAddress(convServerIP);
-		//serverIP=IPAddress(192,168,1,150);
+		//serverIP=IPAddress(192,168,1,138);
 		Serial.println(serverIP);
 		if (!client.connected()) 
 	  	{
-	      	Serial.println("disconnecting.");
+	      	//Serial.println("disconnecting.");
 	    	client.stop();
 	    	isConntected=false;
 	    	Serial.println("try to connect");
@@ -272,7 +325,7 @@ int transportMgr::connectionHandler(void)
        listenSock.flush();
        // We first write a debug message to the terminal then send
        // the data to the client.
-       Serial.println("Reading data"); 
+      // Serial.println("Reading data"); 
        char inChar = ' ';      
        while ( inChar != '\n' )
        {
@@ -290,6 +343,26 @@ int transportMgr::connectionHandler(void)
      }
   }
   return true;
+}
+
+int transportMgr::sendMessage(WiFiClient socket,String sendBuf)
+{
+
+	char bufHeader[20];
+	long length=sendBuf.length();
+	sprintf(bufHeader,"%s%08d",PACKET_MAGIC,length);
+	socket.print(bufHeader);
+	Serial.println(bufHeader);
+	if(length>80)
+	{
+		socket.print(sendBuf.substring(0,79));
+		socket.print(sendBuf.substring(79));
+		
+		Serial.println(sendBuf.substring(0,79));
+		Serial.println(sendBuf.substring(79));
+	}
+	else 		socket.print(sendBuf);
+	Serial.println(sendBuf);
 }
 
 int transportMgr::sendMessage(WiFiClient socket,JsonObject&  sendMsg)
@@ -314,6 +387,9 @@ int transportMgr::sendMessage(WiFiClient socket,JsonObject&  sendMsg)
 	socket.print(bufHeader);
 	sendMsg.printTo(socket);
 	Serial.println("sent!");
+	//socket.print("{\"messageType\":\"configuableTime\",\"configuableType\":\"light\",\"time\":\"40\"}\n");
+	//Serial.println("sent!!");
+	
 	
 #endif
 }

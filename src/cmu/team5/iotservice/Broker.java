@@ -84,6 +84,14 @@ public class Broker {
 						Protocol.getNodeId(message),
 						Protocol.getSensorType(message),
 						Protocol.getValue(message));
+				//return;
+				
+				// Send nodeStatus message to all terminals
+				String nodeId = Protocol.getNodeId(message);
+				HashMap sensorInfo = nodeMgr.getNodeSensorInfo(nodeId);
+				HashMap actuatorInfo = nodeMgr.getNodeActuatorInfo(nodeId);
+				String nodeStatusMsg = Protocol.generateNodeStatusResultMsg(nodeId, sensorInfo, actuatorInfo);
+				terminalMgr.handleMessage(nodeStatusMsg);
 				return;
 			}
 			
@@ -92,6 +100,14 @@ public class Broker {
 						Protocol.getNodeId(message),
 						Protocol.getActuatorType(message),
 						Protocol.getValue(message));
+				//return;
+				
+				// Send nodeStatus message to all terminals
+				String nodeId = Protocol.getNodeId(message);
+				HashMap sensorInfo = nodeMgr.getNodeSensorInfo(nodeId);
+				HashMap actuatorInfo = nodeMgr.getNodeActuatorInfo(nodeId);
+				String nodeStatusMsg = Protocol.generateNodeStatusResultMsg(nodeId, sensorInfo, actuatorInfo);
+				terminalMgr.handleMessage(nodeStatusMsg);
 				return;
 			}
 			
