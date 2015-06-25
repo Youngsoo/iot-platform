@@ -334,6 +334,9 @@ public class Protocol {
 			  }
 		
 		}
+		else{
+			return null;
+		}
 		return SensorInfo;
 	}
 

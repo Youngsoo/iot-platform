@@ -135,7 +135,7 @@ public class NodeConfigWindow extends JPanel {
 		add(lightText, CC.xywh(8, 5, 4, 1));
 
 		//---- alarmconfig ----
-		alarmconfig.setText("Alarm Auto-Switch On Duration (in Sec):");
+		alarmconfig.setText("Alarm Auto-Operation Duration (in Sec):");
 		add(alarmconfig, CC.xy(3, 9));
 
 		//---- alarmText ----

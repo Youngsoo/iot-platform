@@ -57,9 +57,11 @@ public class Terminalwindow extends JPanel {
 	
 	private void MakeEmptySensorTable(){
 		JTable table = getSensorTable();
-		DefaultTableModel t = (DefaultTableModel)table.getModel();
-		while(t.getRowCount() != 0){
-			t.removeRow(0);	
+		if (table != null){
+			DefaultTableModel t = (DefaultTableModel)table.getModel();
+			while(t.getRowCount() != 0){
+				t.removeRow(0);	
+			}
 		}
 	}
 	public void UpdateSensorTable(String NodeId, HashMap<String, String> SensorInfo){
@@ -78,14 +80,16 @@ public class Terminalwindow extends JPanel {
 		HashMap<String, String> ActuratorInfo = new HashMap<String, String>();
 		
 		SensorInfo = Protocol.getSensorInfo(Msg);
+		
 		if (SensorInfo != null){
-			MakeEmptySensorTable();
-			UpdateSensorTable(Protocol.getNodeId(Msg), SensorInfo);
+			UpdateSensorTable(Protocol.getNodeId(Msg), SensorInfo);	
 		}
 		ActuratorInfo = Protocol.getActuratorInfo(Msg);
+		
 		if (ActuratorInfo != null){
 			UpdateActuratorTable(Protocol.getNodeId(Msg), ActuratorInfo);
-		}	
+		}
+		
 	}
 	
 	public static void ServerConfigUpdateReq(String light, String alarm, String log)
@@ -551,8 +555,10 @@ public class Terminalwindow extends JPanel {
 	private void RefreshActionPerformed(ActionEvent e){
 		String []NodeList = RegNodeList;
 		MakeEmptySensorTable();
-		for (int i=0; i<NodeList.length; i++){
-			GetNodeInformation(NodeList[i]);		
+		if (NodeList != null){
+			for (int i=0; i< NodeList.length; i++){
+				GetNodeInformation(NodeList[i]);		
+			}
 		}
 		
 		if (NodeControler == null){
