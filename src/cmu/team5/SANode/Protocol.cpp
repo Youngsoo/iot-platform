@@ -83,7 +83,14 @@ JsonObject* protocolMgr::parseJson(char* bufJson)
 				JsonObject& json=makeNotificationMessage(STR_INFORMATION,STR_DISABLE_OPEN);	
 				return &json;
 			}
-		}		
+		}	
+		if(strcmp(actuatorType,STR_ALARM)==0 && strcmp(value,STR_ON)==0)
+		{
+			if(strcmp(m_sensorMgr.getSersorInfo(STR_DOORSTATE),STR_OPEN)==0)
+			{
+				m_actuatorMgr.handleActuator(STR_DOOR,STR_CLOSE);
+			}
+		}
 		m_actuatorMgr.handleActuator(actuatorType,value);
 		JsonObject& json=makeActuatorValue(actuatorType,(char *)value);
 		return &json;;
@@ -165,6 +172,29 @@ JsonObject* protocolMgr::makeRegisterAck(boolean bSuccess)
 	
 	return &root;
 }
+void protocolMgr::addJson(String * output,char * key,char * value)
+{
+	//*output+=STR_QUOTE+key+STR_QUOTE+STR_CONLON+STR_QUOTE+value+STR_QUOTE;		
+	*output+=STR_QUOTE;	
+	*output+=key;
+	*output+=STR_QUOTE;
+	*output+=STR_CONLON;
+	*output+=STR_QUOTE;	
+	*output+=value;
+	*output+=STR_QUOTE;
+}
+
+void protocolMgr::makeSensorValue(String * output,char *sensorName,char * value)
+{
+	addJson(output,STR_MESSAGE_TYPE,STR_SENSOR);
+	*output+=",";
+	addJson(output,STR_SENSOR_TYPE,sensorName);
+	*output+=",";
+	addJson(output,STR_NODE_ID,password);
+	*output+=",";
+	addJson(output,STR_VALUE,value);
+	*output+="}";
+}
 
 JsonObject& protocolMgr::makeSensorValue(const char *sensorName,char * value)
 {
@@ -178,6 +208,19 @@ JsonObject& protocolMgr::makeSensorValue(const char *sensorName,char * value)
 	
 	return root;
 }
+
+void protocolMgr::makeActuatorValue(String * output,char *actuatorName,char * value)
+{
+	addJson(output,STR_MESSAGE_TYPE,STR_ACTUATOR);
+	*output+=",";
+	addJson(output,STR_ACTUATOR_TYPE,actuatorName);
+	*output+=",";
+	addJson(output,STR_NODE_ID,password);
+	*output+=",";
+	addJson(output,STR_VALUE,value);
+	*output+="}";
+}
+
 JsonObject& protocolMgr::makeActuatorValue(const char *actuatorName,char * value)
 {
 	StaticJsonBuffer<STATIC_JSON_BUFFER_SIZE> jsonBuffer;
@@ -191,6 +234,32 @@ JsonObject& protocolMgr::makeActuatorValue(const char *actuatorName,char * value
 	return root;
 }
 
+
+void protocolMgr::makeNotificationMessage(String * output,char *msgType,char * contents,char * setData)
+{
+	addJson(output,STR_MESSAGE_TYPE,msgType);
+	*output+=",";
+	addJson(output,STR_NODE_ID,password);
+	*output+=",";
+	addJson(output,STR_CONTENTS,contents);
+	*output+=",";
+	addJson(output,STR_SET,setData);
+	*output+="}";
+}
+
+
+
+void protocolMgr::makeNotificationMessage(String * output,char *msgType,char * contents)
+{
+	addJson(output,STR_MESSAGE_TYPE,msgType);
+	*output+=",";
+	addJson(output,STR_NODE_ID,password);
+	*output+=",";
+	addJson(output,STR_CONTENTS,contents);
+	*output+="}";
+}
+
+
 JsonObject& protocolMgr::makeNotificationMessage(char *msgType,char * contents)
 {
 	StaticJsonBuffer<STATIC_JSON_BUFFER_SIZE> jsonBuffer;
@@ -202,6 +271,17 @@ JsonObject& protocolMgr::makeNotificationMessage(char *msgType,char * contents)
 	return root;
 }
 
+JsonObject& protocolMgr::makeNotificationMessage(char *msgType,char * contents,char * setData)
+{
+	StaticJsonBuffer<STATIC_JSON_BUFFER_SIZE> jsonBuffer;
+  	JsonObject& root = jsonBuffer.createObject();
+
+	root[STR_MESSAGE_TYPE] = msgType;
+	root[STR_NODE_ID] = password; 
+	root[STR_CONTENTS] = contents;
+	root[STR_SET] = setData;
+	return root;
+}
 
 char * protocolMgr::getSersorValue(const char * sensorName)
 {

@@ -78,8 +78,10 @@ public class Terminalwindow extends JPanel {
 		HashMap<String, String> ActuratorInfo = new HashMap<String, String>();
 		
 		SensorInfo = Protocol.getSensorInfo(Msg);
-		UpdateSensorTable(Protocol.getNodeId(Msg), SensorInfo);
-	
+		if (SensorInfo != null){
+			MakeEmptySensorTable();
+			UpdateSensorTable(Protocol.getNodeId(Msg), SensorInfo);
+		}
 		ActuratorInfo = Protocol.getActuratorInfo(Msg);
 		if (ActuratorInfo != null){
 			UpdateActuratorTable(Protocol.getNodeId(Msg), ActuratorInfo);
@@ -563,15 +565,15 @@ public class Terminalwindow extends JPanel {
 	private void EmergencyMsgDisplay(String Msg){
 		String data = Protocol.getMsgEmergency(Msg);
 		try {
-			SoundUtils.tone(1000,2000);
-			Thread.sleep(1000);
-		} catch (LineUnavailableException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		SoundUtils.tone(1000,2000);
 		UIManager.put("OptionPane.okButtonText", "Ok");
 		JOptionPane.showMessageDialog(Terminal.Window, new JLabel(
 			    "<html><h2><font color='red'>" + data + "</font></h2></html>"), "EMERGENCY MESSAGE", JOptionPane.INFORMATION_MESSAGE);
+		Thread.sleep(1000);
+		}catch (LineUnavailableException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void InformationMsgDisplay(String Msg){
@@ -635,6 +637,8 @@ public class Terminalwindow extends JPanel {
 			UIManager.put("OptionPane.okButtonText", "Ok");
 			JOptionPane.showMessageDialog(Terminal.Window, "InValid Login !!!", "Login", JOptionPane.INFORMATION_MESSAGE);
 			UserLoggedIn = false;
+			UserId.setText("");
+			Password.setText("");
 		}
 		
 		if ((ClientSocket !=null) && (UserLoggedIn == true)){
